@@ -12,7 +12,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 export default function Hero() {
   const next = useUpcomingEvents()[0];
-  const nextEvent = next && { title: next.title, slug: next.slug, when: `${eventParts(next.date).long} · ${timeRange(next)}` };
+  const nextEvent = next && { title: next.title, slug: next.slug, date: eventParts(next.date).long, time: timeRange(next) };
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const [cycle, setCycle] = useState(0); // bumps to restart the dot progress animation
@@ -52,7 +52,7 @@ export default function Hero() {
             <Link className="next-up" href={`/events/${nextEvent.slug}`}>
               <small>Next Foundation event</small>
               <b>{nextEvent.title}</b>
-              <span>{nextEvent.when}</span>
+              <span>{nextEvent.date} · <span className="nowrap">{nextEvent.time}</span></span>
             </Link>
           )}
         </div>

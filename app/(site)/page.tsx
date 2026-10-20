@@ -4,7 +4,7 @@ import Stats from "@/components/Stats";
 import UpcomingEvents from "@/components/UpcomingEvents";
 import GiveCta from "@/components/GiveCta";
 import { DonateButton } from "@/components/Actions";
-import { ProgramCount, ProgramPaths, SchoolCount, SchoolTicker } from "@/components/Live";
+import { OutsideScholarshipsLink, ProgramCount, ProgramPaths, SchoolTicker } from "@/components/Live";
 import { grantTypes, site } from "@/lib/content";
 
 export default function Home() {
@@ -18,7 +18,7 @@ export default function Home() {
       <section className="intro reveal">
         <div className="wrap">
           <h2>Creating bright futures for students and families in Lake County</h2>
-          <p>Students from <SchoolCount /> member high schools spend part of every school day at Tech Campus, learning a trade on real equipment. The Foundation makes sure cost never decides who gets to finish.</p>
+          <p>Tech Campus students learn a trade with their hands, on the same equipment they&apos;ll use at work. The Foundation makes sure cost never decides who gets to finish.</p>
           <p style={{ marginTop: 18 }}><Link className="text-link" href="/about">More about the Foundation →</Link></p>
         </div>
       </section>
@@ -69,7 +69,7 @@ export default function Home() {
             <p className="sub">Any Tech Campus student can apply for Foundation support. One short application covers scholarships, grants for tools and fees, and emergency help. It takes about 10 minutes, and your progress saves as you go.</p>
             <div className="hero-actions">
               <Link className="btn spark" href="/apply">Start your application</Link>
-              <Link className="btn ghost" href="/apply#outside-scholarships">Outside scholarships</Link>
+              <OutsideScholarshipsLink />
             </div>
           </div>
           <div className="aid-list reveal">

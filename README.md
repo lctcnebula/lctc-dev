@@ -37,7 +37,7 @@ Import the GitHub repo in Vercel. It detects Next.js automatically: no settings 
 
 | Route | What it is |
 | --- | --- |
-| `/` | Home: hero slideshow, stats, member-school ticker, student aid, programs, events, donate |
+| `/` | Home: hero slideshow, stats, member-school ticker (once schools are added in Settings), student aid, programs, events, donate |
 | `/programs` | All programs with category filters |
 | `/programs/[slug]` | One page per program, generated from the data |
 | `/apply` | Four-step student grant application, plus outside scholarships |

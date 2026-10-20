@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import Stats from "@/components/Stats";
-import { ContactDetails, SchoolCount, SchoolGrid } from "@/components/Live";
+import { ContactDetails, MemberSchools } from "@/components/Live";
 import { site } from "@/lib/content";
 
 export const metadata: Metadata = { title: "About", description: `About the ${site.name} and Lake County Tech Campus.` };
@@ -22,7 +22,7 @@ export default function AboutPage() {
             <p className="kicker">Who we are</p>
             <h2>Cost should never decide who finishes</h2>
             <p>The <strong>{site.name}</strong> exists for one reason: to make sure every Lake County Tech Campus student can finish what they start.</p>
-            <p>Students come to Tech Campus from <SchoolCount /> member high schools to learn a trade on real equipment. Training is hands-on and often comes with costs a family didn&apos;t plan for: tools, uniforms, exam fees.</p>
+            <p>Learning a trade means real tools and real gear, and those often come with costs a family didn&apos;t plan for: tools, uniforms, exam fees.</p>
             <p>The Foundation covers what families can&apos;t, and funds the scholarships that carry graduates into college, apprenticeships and their first jobs. Every dollar comes from donors, alumni and local businesses who believe in these students.</p>
             <div className="hero-actions">
               <Link className="btn blue" href="/get-involved">Get involved</Link>
@@ -36,18 +36,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="block tint">
-        <div className="wrap">
-          <div className="head reveal">
-            <div>
-              <p className="kicker">Our community</p>
-              <h2><SchoolCount /> member high schools</h2>
-              <p>Students from these schools spend part of each school day at Tech Campus.</p>
-            </div>
-          </div>
-          <SchoolGrid />
-        </div>
-      </section>
+      <MemberSchools />
 
       <section className="block">
         <div className="wrap">

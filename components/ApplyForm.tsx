@@ -146,7 +146,7 @@ export default function ApplyForm() {
             </div>
             <div className="row2">
               {select("grade", "Grade", opts(grades))}
-              {select("school", "Home high school", [...opts(schools), { value: "Other", label: "Other" }])}
+              {schools.length ? select("school", "Home high school", [...opts(schools), { value: "Other", label: "Other" }]) : text("school", "Home high school", { autoComplete: "off" })}
             </div>
             <div className="row2">
               {select("program", "Tech Campus program", programs.map(p => ({ value: p.slug, label: p.name })))}

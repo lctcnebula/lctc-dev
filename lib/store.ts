@@ -16,10 +16,24 @@ function read<K extends keyof DB>(k: K): DB[K] {
   let v: DB[K] = seed[k];
   try {
     const raw = localStorage.getItem(PREFIX + k);
-    if (raw) v = k === "settings" ? { ...seed.settings, ...JSON.parse(raw) } : JSON.parse(raw);
+    if (raw) v = k === "settings" ? { ...seed.settings, ...JSON.parse(raw) } : withNewSeed(k, JSON.parse(raw));
   } catch {}
   cache[k] = v;
   return v;
+}
+
+// Seed items added after this browser first saved a collection would otherwise never show up.
+// "lctc:_seen" remembers which seed ids each collection has already been given, so new ones are
+// added once while ones an admin deleted stay deleted.
+function withNewSeed<K extends keyof DB>(k: K, stored: DB[K]): DB[K] {
+  const list = stored as { id: string }[], fresh = seed[k] as { id: string }[];
+  let seen: Record<string, string[]> = {};
+  try { seen = JSON.parse(localStorage.getItem(PREFIX + "_seen") || "{}"); } catch {}
+  const known = new Set([...(seen[k] || []), ...list.map(x => x.id)]);
+  const added = fresh.filter(x => !known.has(x.id));
+  seen[k] = fresh.map(x => x.id);
+  try { localStorage.setItem(PREFIX + "_seen", JSON.stringify(seen)); } catch {}
+  return (added.length ? [...list, ...added] : list) as DB[K];
 }
 
 function write<K extends keyof DB>(k: K, v: DB[K]) {
@@ -74,6 +88,7 @@ export function saveSettings(patch: Partial<DB["settings"]>) {
 /** Wipes every change made in this browser and returns to the seed data. */
 export function resetAll() {
   (Object.keys(seed) as (keyof DB)[]).forEach(k => { try { localStorage.removeItem(PREFIX + k); } catch {} delete cache[k]; });
+  try { localStorage.removeItem(PREFIX + "_seen"); } catch {}
   listeners.forEach(l => l());
 }
 

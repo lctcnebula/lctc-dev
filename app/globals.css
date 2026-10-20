@@ -91,7 +91,8 @@ nav.main a.apply-link:hover, nav.main a.apply-link.on { background: var(--spark-
 .next-up:hover { background: rgba(255,255,255,.17); transform: translateY(-3px); }
 .next-up small { font-size: .64rem; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--spark); }
 .next-up b { font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
-.next-up span { font-size: .84rem; opacity: .85; }
+.next-up > span { font-size: .84rem; opacity: .85; }
+.nowrap { white-space: nowrap; }
 .slide-ui { position: absolute; z-index: 3; left: 0; right: 0; bottom: 84px; }
 .slide-ui .wrap { display: flex; align-items: center; gap: 18px; }
 .caption { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; opacity: .85; margin-right: auto; min-height: 1.2em; }
@@ -211,7 +212,9 @@ h2 { font-family: var(--display); font-style: italic; font-weight: 800; text-tra
 .chip:hover { border-color: var(--blue); color: var(--blue); }
 .chip[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
 .chip .n { opacity: .6; margin-left: 4px; }
-.paths { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.paths { display: flex; flex-wrap: wrap; gap: 14px; }
+/* At most three per row; cards in a short last row stretch so the row is never left half empty. */
+.paths > * { flex: 1 1 max(260px, calc((100% - 28px) / 3)); }
 .path {
   background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 18px; text-decoration: none;
   display: flex; gap: 14px; align-items: flex-start; min-width: 0; animation: pop .4s var(--ease) both;
@@ -223,7 +226,7 @@ h2 { font-family: var(--display); font-style: italic; font-weight: 800; text-tra
 .path div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .path small { font-size: .64rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .path b { font-weight: 700; font-size: .95rem; line-height: 1.35; }
-.path span { font-size: .84rem; color: var(--muted); line-height: 1.5; }
+.path div > span { font-size: .84rem; color: var(--muted); line-height: 1.5; }
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
 
 /* ---------- Student aid band ---------- */
@@ -566,12 +569,12 @@ footer.site { background: var(--blue-night); color: rgba(255,255,255,.72); paddi
 .year header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .year h2 { font: italic 800 2.2rem/1 var(--display); color: var(--blue); }
 .year-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
-.year-stats div { background: var(--mist); border-radius: 14px; padding: 14px 16px; }
+.year-stats div { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; background: var(--mist); border-radius: 14px; padding: 14px 16px; }
 .year-stats dt { font-size: .66rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .year-stats dd { font: italic 800 1.7rem/1.2 var(--display); }
 .year-highlights { margin-top: 18px; padding-left: 20px; color: var(--muted); display: grid; gap: 4px; }
 .link-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-.link-cards a { display: grid; gap: 6px; padding: 22px; border: 1px solid var(--line); border-radius: 18px; text-decoration: none; transition: border-color .2s, transform .25s var(--ease); }
+.link-cards a { display: grid; align-content: start; gap: 6px; padding: 22px; border: 1px solid var(--line); border-radius: 18px; text-decoration: none; transition: border-color .2s, transform .25s var(--ease); }
 .link-cards a:hover { border-color: var(--blue); transform: translateY(-3px); }
 .link-cards b::after { content: " →"; color: var(--blue); }
 .link-cards span { font-size: .86rem; color: var(--muted); }

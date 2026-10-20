@@ -12,7 +12,7 @@ export default function BoardGrid() {
     <div className="people">
       {board.map(m => (
         <article className="person" key={m.id}>
-          <div className="avatar">{m.photo ? <img src={m.photo} alt="" width={160} height={160} /> : <span aria-hidden="true">{initials(m.name)}</span>}</div>
+          <div className="avatar">{m.photo ? <img src={m.photo} alt="" width={160} height={160} /> : <span aria-hidden="true">{m.sample ? <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" /></svg> : initials(m.name)}</span>}</div>
           <small>{m.role}</small>
           <h3>{m.name} <SampleTag show={m.sample} /></h3>
           {m.bio && <p>{m.bio}</p>}

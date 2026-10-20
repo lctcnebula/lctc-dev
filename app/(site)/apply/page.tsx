@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ApplyForm from "@/components/ApplyForm";
 import OutsideScholarships from "@/components/OutsideScholarships";
-import { EmailLink, SchoolCount } from "@/components/Live";
+import { EmailLink } from "@/components/Live";
 
 export const metadata: Metadata = {
   title: "Apply for a grant",
@@ -30,7 +30,6 @@ export default function ApplyPage() {
               <ul>
                 <li>Any student currently enrolled in a Tech Campus program</li>
                 <li>Juniors, seniors and adult learners</li>
-                <li>Students from all <SchoolCount /> member high schools</li>
               </ul>
             </div>
             <div className="aside-box">
@@ -44,7 +43,7 @@ export default function ApplyPage() {
             </div>
             <div className="aside-box tinted">
               <h3>Questions?</h3>
-              <p className="hint">Email <EmailLink />. Your Student Services counselor can also help.</p>
+              <p className="hint">Email <EmailLink />. Your school counselor can also help.</p>
             </div>
           </div>
         </div>

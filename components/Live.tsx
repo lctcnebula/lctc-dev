@@ -11,9 +11,6 @@ export function SampleTag({ show, children = "Sample" }: { show?: boolean; child
   return show ? <span className="sample-tag" title="Placeholder content. Edit or delete it in the admin dashboard.">{children}</span> : null;
 }
 
-export function SchoolCount() {
-  return <>{useData("settings").schools.length}</>;
-}
 
 export function ProgramCount() {
   return <>{useData("programs").length}</>;
@@ -32,8 +29,30 @@ export function SchoolTicker() {
   );
 }
 
-export function SchoolGrid() {
-  return <div className="school-grid">{useData("settings").schools.map(s => <span key={s}>{s}</span>)}</div>;
+/** About-page school list; hidden until the Foundation adds schools in Admin → Settings. */
+export function MemberSchools() {
+  const schools = useData("settings").schools;
+  if (!schools.length) return null;
+  return (
+    <section className="block tint">
+      <div className="wrap">
+        <div className="head reveal">
+          <div>
+            <p className="kicker">Our community</p>
+            <h2>{schools.length} member high schools</h2>
+            <p>Students from these schools take part in Tech Campus programs.</p>
+          </div>
+        </div>
+        <div className="school-grid">{schools.map(s => <span key={s}>{s}</span>)}</div>
+      </div>
+    </section>
+  );
+}
+
+/** Shown only while Admin → Outside scholarships has entries, so it never points at an empty section. */
+export function OutsideScholarshipsLink() {
+  if (!useData("scholarships").length) return null;
+  return <Link className="btn ghost" href="/apply#outside-scholarships">Outside scholarships</Link>;
 }
 
 export function EmailLink() {

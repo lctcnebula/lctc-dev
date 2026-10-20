@@ -62,7 +62,7 @@ export function validate(a: ApplicationInput, lists: Lists, fields?: (keyof Appl
   if (!emailRe.test(s(a.email))) e.email = "Enter a valid email address.";
   if (s(a.phone) && s(a.phone).replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
   if (!grades.includes(a.grade)) e.grade = "Choose your grade.";
-  if (!lists.schools.includes(a.school) && a.school !== "Other") e.school = "Choose your home high school.";
+  if (lists.schools.length ? !lists.schools.includes(a.school) && a.school !== "Other" : s(a.school).length < 2) e.school = lists.schools.length ? "Choose your home high school." : "Enter your home high school.";
   if (!lists.programs.some(p => p.slug === a.program)) e.program = "Choose your Tech Campus program.";
   if (!programYears.includes(a.programYear)) e.programYear = "Choose your year in the program.";
   if (!grantTypes.some(g => g.id === a.grantType)) e.grantType = "Choose what you're applying for.";
