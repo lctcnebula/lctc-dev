@@ -46,7 +46,7 @@ export default function Home() {
               <div className="content">
                 <h3>Tools &amp; Equipment</h3>
                 <p>Starter kits, uniforms and protective gear, so no student misses out because of what their family can afford.</p>
-                <DonateButton className="more" fund="Tools & Equipment">Help equip a student</DonateButton>
+                <DonateButton className="more" fund="innovation">Help equip a student</DonateButton>
               </div>
             </article>
             <article className="card reveal">
@@ -54,7 +54,7 @@ export default function Home() {
               <div className="content">
                 <h3>Certifications</h3>
                 <p>Covering exam and licensing fees so students leave with the industry credentials employers ask for.</p>
-                <DonateButton className="more" fund="Certifications">Fund a certification</DonateButton>
+                <DonateButton className="more" fund="credentials">Fund a certification</DonateButton>
               </div>
             </article>
           </div>

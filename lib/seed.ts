@@ -27,14 +27,17 @@ export type Subscriber = { id: string; email: string; name: string; createdAt: s
 
 export type Donation = {
   id: string; receipt: string; name: string; email: string; amount: number; freq: "once" | "monthly";
-  fund: string; card: string; createdAt: string; sample?: boolean;
+  fund: string; tier?: string; card: string; createdAt: string; sample?: boolean;
 };
 
 export type StoredApplication = Application & { status: string; sample?: boolean };
 
 export type Message = { id: string; name: string; email: string; topic: string; message: string; status: string; createdAt: string; sample?: boolean };
 
-export type BoardMember = { id: string; name: string; role: string; bio: string; photo: string; order: number; sample?: boolean };
+// slug, company and linkedin were added later, so members saved before then may not have them (see boardSlug).
+export type BoardMember = {
+  id: string; slug?: string; name: string; role: string; company?: string; bio: string; photo: string; linkedin?: string; order: number; sample?: boolean;
+};
 
 export type Alum = {
   id: string; name: string; email: string; program: string; year: string; now: string; story: string;
@@ -66,8 +69,8 @@ const at = (d: string) => new Date(d + "T10:00:00").toISOString();
 export const seed = {
   settings: {
     email: "info@lctcfoundation.org",
-    phone: "",
-    address: "",
+    phone: "847-543-6040",
+    address: "19525 W Washington St, Grayslake, IL 60030",
     schools: [], // Added by the Foundation in Admin → Settings
   } as Settings,
 
@@ -99,6 +102,14 @@ export const seed = {
   ] as Program[],
 
   events: [
+    { id: "e-mtm-oct", slug: "meet-the-mission-october-2026", title: "Meet the Mission", date: "2026-10-22", start: "9:30 AM", end: "11:00 AM", location: "Lake County Tech Campus, 19525 W Washington St, Grayslake, IL 60030",
+      summary: "Discover how the Foundation serves our students and community. Donuts and coffee available.",
+      body: "Join us for a morning at Tech Campus.\n\n## What to expect\n- Campus tours\n- A brief presentation on the Foundation's mission\n- Q&A with Foundation board members\n- Networking\n\nDonuts and coffee are available.",
+      image: "/assets/img/welder-shop.jpg", capacity: 0, rsvpOpen: true, published: true },
+    { id: "e-mtm-nov", slug: "meet-the-mission-november-2026", title: "Meet the Mission", date: "2026-11-12", start: "5:00 PM", end: "", location: "Lake County Tech Campus, 19525 W Washington St, Grayslake, IL 60030",
+      summary: "An evening Meet the Mission meeting for business and community leaders ahead of the February 2027 CTE Month campaign.",
+      body: "Between now and January 2027 the Foundation is hosting a series of Meet the Mission meetings to connect directly with business and community leaders as we prepare for our inaugural funding campaign during National CTE Month in February 2027.\n\n## What to expect\n- How the Foundation supports students across its four pillars\n- Student highlights\n- Q&A with Foundation board members",
+      image: "/assets/img/mentoring.jpg", capacity: 0, rsvpOpen: true, published: true },
     { id: "e1", slug: "fall-golf-outing-2026", title: "Fall Golf Outing", date: "2026-09-19", start: "8:00 AM", end: "2:00 PM", location: "To be announced",
       summary: "A morning on the course raising money for student tool kits.",
       body: "Join Foundation friends for nine holes, lunch and a raffle. Every foursome sponsors starter tool kits for first-year students.",
@@ -165,8 +176,8 @@ export const seed = {
   ] as Subscriber[],
 
   donations: [
-    { id: "d1", receipt: "LCTC-SAMPLE1", name: "Sample Donor", email: "donor@example.com", amount: 100, freq: "once", fund: "Scholarships", card: "Visa ending 4242", createdAt: at("2026-10-02"), sample: true },
-    { id: "d2", receipt: "LCTC-SAMPLE2", name: "Sample Monthly Donor", email: "monthly@example.com", amount: 25, freq: "monthly", fund: "Tools & Equipment", card: "Mastercard ending 4444", createdAt: at("2026-10-08"), sample: true },
+    { id: "d1", receipt: "LCTC-SAMPLE1", name: "Sample Donor", email: "donor@example.com", amount: 100, freq: "once", fund: "Student Scholarships", card: "Visa ending 4242", createdAt: at("2026-10-02"), sample: true },
+    { id: "d2", receipt: "LCTC-SAMPLE2", name: "Sample Monthly Donor", email: "monthly@example.com", amount: 25, freq: "monthly", fund: "Programmatic Innovation", card: "Mastercard ending 4444", createdAt: at("2026-10-08"), sample: true },
   ] as Donation[],
 
   applications: [] as StoredApplication[],
@@ -175,11 +186,22 @@ export const seed = {
     { id: "m1", name: "Sample Visitor", email: "visitor@example.com", topic: "Volunteering", message: "This is a sample message so you can see how contact form submissions appear.", status: "New", createdAt: at("2026-10-12"), sample: true },
   ] as Message[],
 
+  // From the Foundation's board photo (2026). Staff first, then volunteer board members A–Z.
   board: [
-    { id: "bm1", name: "Name to be added", role: "Board Chair", bio: "Add a short bio from the admin dashboard.", photo: "", order: 1, sample: true },
-    { id: "bm2", name: "Name to be added", role: "Vice Chair", bio: "", photo: "", order: 2, sample: true },
-    { id: "bm3", name: "Name to be added", role: "Treasurer", bio: "", photo: "", order: 3, sample: true },
-    { id: "bm4", name: "Name to be added", role: "Secretary", bio: "", photo: "", order: 4, sample: true },
+    { id: "bm-kapala", slug: "sebastian-kapala", name: "Dr. Sebastian Kapala", role: "LCTC Executive Director", bio: "Executive Director of Lake County Tech Campus.", company: "", linkedin: "", photo: "/assets/board/kapala.jpg", order: 1 },
+    { id: "bm-hughes", slug: "joanne-hughes", name: "Joanne Hughes", role: "Chief Financial Officer / CSBO", bio: "Business manager and chief school business official for Lake County Tech Campus.", company: "", linkedin: "", photo: "/assets/board/hughes.jpg", order: 2 },
+    { id: "bm-del-rio", slug: "elizabeth-del-rio", name: "Elizabeth Del Rio", role: "Foundation & Stakeholder Relations Officer", bio: "Oversees the Foundation and leads coordination with partners, stakeholders and community organizations.", company: "", linkedin: "", photo: "/assets/board/del-rio.jpg", order: 3 },
+    { id: "bm-dickson", slug: "sue-dickson", name: "Sue Dickson", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/dickson.jpg", order: 4 },
+    { id: "bm-doll", slug: "don-doll", name: "Don Doll", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/doll.jpg", order: 5 },
+    { id: "bm-golwitzer", slug: "bettina-golwitzer", name: "Bettina Golwitzer", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/golwitzer.jpg", order: 6 },
+    { id: "bm-harris", slug: "james-dean-harris", name: "James Dean Harris", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/harris.jpg", order: 7 },
+    { id: "bm-kischer", slug: "leslie-kischer", name: "Leslie Kischer", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/kischer.jpg", order: 8 },
+    { id: "bm-kleber", slug: "norm-kleber", name: "Norm Kleber", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/kleber.jpg", order: 9 },
+    { id: "bm-maksimovic", slug: "dalibor-maksimovic", name: "Dalibor Maksimovic", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/maksimovic.jpg", order: 10 },
+    { id: "bm-neal", slug: "tamika-neal", name: "Tamika Neal", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/neal.jpg", order: 11 },
+    { id: "bm-obrien", slug: "john-obrien", name: "John O'Brien", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/obrien.jpg", order: 12 },
+    { id: "bm-taques", slug: "carlos-taques", name: "Carlos Taques", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/taques.jpg", order: 13 },
+    { id: "bm-torossy", slug: "vincent-torossy", name: "Vincent Torossy", role: "Board Member", bio: "", company: "", linkedin: "", photo: "/assets/board/torossy.jpg", order: 14 },
   ] as BoardMember[],
 
   alumni: [

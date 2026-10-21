@@ -7,10 +7,10 @@ import { EmailLink } from "@/components/Live";
 export const metadata: Metadata = { title: "Donate", description: "Give to scholarships, tools, certifications and grants for Lake County Tech Campus students." };
 
 const impact = [
-  { amt: "$25", text: "covers safety glasses and gloves for a first-week shop student" },
-  { amt: "$100", text: "helps pay an industry certification exam fee" },
-  { amt: "$250", text: "puts a starter tool kit in a student's hands" },
-  { amt: "$1,000", text: "funds a scholarship toward college or an apprenticeship" },
+  { amt: "$50", text: "gives a student their baseline safety credential" },
+  { amt: "$200", text: "pays a state board exam, fingerprinting and licensing fees" },
+  { amt: "$500", text: "buys a professional toolkit a student keeps after graduation" },
+  { amt: "$1,100", text: "sponsors one student's entire year at Tech Campus" },
 ];
 
 export default function DonatePage() {
@@ -33,6 +33,8 @@ export default function DonatePage() {
             <div className="aside-box">
               <h3>Other ways to give</h3>
               <ul>
+                <li><Link href="/donations">See every type of donation</Link></li>
+                <li><Link href="/pricing">Student giving tiers</Link></li>
                 <li><Link href="/contact?topic=Donating%20equipment">Donate tools or equipment</Link></li>
                 <li><Link href="/get-involved">Mentor or partner with us</Link></li>
                 <li><Link href="/contact?topic=Donating">Give by check or stock</Link></li>

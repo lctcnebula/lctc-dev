@@ -6,7 +6,7 @@ import { useSite } from "./Providers";
 type Btn = { className?: string; children: React.ReactNode };
 
 export function DonateButton({ className = "btn solid", fund, children }: Btn & { fund?: string }) {
-  return <Link className={className} href={fund ? `/donate?fund=${encodeURIComponent(fund)}` : "/donate"}>{children}</Link>;
+  return <Link className={className} href={fund ? `/donate?type=${encodeURIComponent(fund)}` : "/donate"}>{children}</Link>;
 }
 
 export function ConfettiButton({ className = "btn ghost", children }: Btn) {

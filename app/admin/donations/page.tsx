@@ -23,7 +23,7 @@ export default function DonationsAdmin() {
         { label: "Email", get: () => null, csv: r => r.email, className: "hide" },
         { label: "Amount", get: r => <b>{money(r.amount)}{r.freq === "monthly" ? "/mo" : ""}</b>, csv: r => r.amount, className: "num" },
         { label: "Frequency", get: () => null, csv: r => r.freq, className: "hide" },
-        { label: "Fund", get: r => r.fund, csv: r => r.fund },
+        { label: "Fund", get: r => <>{r.fund}{r.tier && <small>{r.tier}</small>}</>, csv: r => r.tier ? `${r.fund} · ${r.tier}` : r.fund },
         { label: "Method", get: r => r.card, csv: r => r.card },
         { label: "Receipt", get: r => <code>{r.receipt}</code>, csv: r => r.receipt },
       ]}
