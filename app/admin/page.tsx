@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { can, roleLabels, useUser, type Section } from "@/lib/auth";
 import { money, upcoming, useData } from "@/lib/store";
+import { frequencies } from "@/lib/seed";
 import { fmtDate, fmtDateTime } from "@/components/admin/Manager";
 
 export default function Dashboard() {
@@ -34,7 +35,7 @@ export default function Dashboard() {
 
   type Act = { at: string; s: Section; href: string; text: React.ReactNode };
   const activity: Act[] = [
-    ...donations.map(d => ({ at: d.createdAt, s: "donations" as const, href: "/admin/donations", text: <><b>{d.name}</b> gave {money(d.amount)}{d.freq === "monthly" ? "/mo" : ""} to {d.fund}</> })),
+    ...donations.map(d => ({ at: d.createdAt, s: "donations" as const, href: "/admin/donations", text: <><b>{d.name}</b> gave {money(d.amount)}{frequencies[d.freq]?.short} to {d.fund}</> })),
     ...applications.map(a => ({ at: a.submittedAt, s: "applications" as const, href: "/admin/applications", text: <><b>{a.firstName} {a.lastName}</b> applied for aid</> })),
     ...messages.map(m => ({ at: m.createdAt, s: "messages" as const, href: "/admin/messages", text: <><b>{m.name}</b> sent a message: {m.topic}</> })),
     ...rsvps.map(r => ({ at: r.createdAt, s: "rsvps" as const, href: `/admin/rsvps?event=${r.eventId}`, text: <><b>{r.name}</b> RSVP&apos;d to {events.find(e => e.id === r.eventId)?.title ?? "an event"}</> })),

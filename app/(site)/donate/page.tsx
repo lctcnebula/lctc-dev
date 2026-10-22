@@ -17,7 +17,7 @@ export default function DonatePage() {
   return (
     <>
       <PageHero image="/assets/img/graduates.jpg" crumbs={[{ label: "Donate" }]} title="Give a student their start">
-        Any amount, once or monthly. Every dollar goes to Lake County Tech Campus students.
+        Any amount, once, monthly or yearly. Every dollar goes to Lake County Tech Campus students.
       </PageHero>
 
       <section className="block tint" style={{ paddingTop: "clamp(48px, 6vw, 72px)" }}>

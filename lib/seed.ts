@@ -25,8 +25,15 @@ export type Post = {
 
 export type Subscriber = { id: string; email: string; name: string; createdAt: string; sample?: boolean };
 
+export type Freq = "once" | "monthly" | "yearly";
+export const frequencies: Record<Freq, { label: string; adj: string; per: string; short: string }> = {
+  once: { label: "One-time", adj: "one-time", per: "", short: "" },
+  monthly: { label: "Monthly", adj: "monthly", per: " / month", short: "/mo" },
+  yearly: { label: "Yearly", adj: "yearly", per: " / year", short: "/yr" },
+};
+
 export type Donation = {
-  id: string; receipt: string; name: string; email: string; amount: number; freq: "once" | "monthly";
+  id: string; receipt: string; name: string; email: string; amount: number; freq: Freq;
   fund: string; tier?: string; card: string; createdAt: string; sample?: boolean;
 };
 

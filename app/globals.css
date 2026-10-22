@@ -495,7 +495,7 @@ footer.site { background: var(--blue-night); color: rgba(255,255,255,.72); paddi
 .steps li.on { background: var(--blue); }
 .dm-title { font: italic 800 2rem/1 var(--display); text-transform: uppercase; margin-bottom: 6px; }
 .dm-sub { color: var(--muted); font-size: .9rem; margin-bottom: 22px; }
-.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--mist); border-radius: 99px; padding: 4px; margin-bottom: 18px; }
+.seg { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; background: var(--mist); border-radius: 99px; padding: 4px; margin-bottom: 18px; }
 .seg button { border: 0; background: transparent; padding: 11px; border-radius: 99px; font-weight: 600; font-size: .88rem; cursor: pointer; color: var(--muted); transition: all .2s; }
 .seg button[aria-pressed="true"] { background: #fff; color: var(--blue); box-shadow: 0 4px 14px -8px rgba(10,37,64,.45); }
 .amounts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }

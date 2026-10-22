@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { isStaff, roleLabels, signOut, useUser } from "@/lib/auth";
 import { money, useData } from "@/lib/store";
+import { frequencies } from "@/lib/seed";
 import { eventParts } from "./EventCard";
 
 export default function Account() {
@@ -49,7 +50,7 @@ export default function Account() {
           <h2>My giving</h2>
           {gifts.length ? (
             <ul className="plain-list">
-              {gifts.map(d => <li key={d.id}><b>{money(d.amount)}{d.freq === "monthly" ? " / month" : ""}</b><span>{d.fund} · {new Date(d.createdAt).toLocaleDateString("en-US")} · {d.receipt}</span></li>)}
+              {gifts.map(d => <li key={d.id}><b>{money(d.amount)}{frequencies[d.freq]?.per}</b><span>{d.fund} · {new Date(d.createdAt).toLocaleDateString("en-US")} · {d.receipt}</span></li>)}
             </ul>
           ) : <p className="hint">No gifts yet. <Link href="/donate">Make your first gift →</Link></p>}
         </section>
