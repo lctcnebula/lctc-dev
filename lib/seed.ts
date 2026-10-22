@@ -34,9 +34,10 @@ export type StoredApplication = Application & { status: string; sample?: boolean
 
 export type Message = { id: string; name: string; email: string; topic: string; message: string; status: string; createdAt: string; sample?: boolean };
 
-// slug, company and linkedin were added later, so members saved before then may not have them (see boardSlug).
+// slug, company and the website/social links were added later, so members saved before then may not have them (see boardSlug).
 export type BoardMember = {
-  id: string; slug?: string; name: string; role: string; company?: string; bio: string; photo: string; linkedin?: string; order: number; sample?: boolean;
+  id: string; slug?: string; name: string; role: string; company?: string; bio: string; photo: string;
+  website?: string; linkedin?: string; facebook?: string; instagram?: string; x?: string; order: number; sample?: boolean;
 };
 
 export type Alum = {

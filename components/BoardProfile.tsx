@@ -6,6 +6,7 @@ import { Avatar, useBoard } from "./BoardGrid";
 import { Missing } from "./Missing";
 import { SampleTag } from "./Live";
 import { Prose } from "./Prose";
+import SocialLinks from "./SocialLinks";
 
 export default function BoardProfile({ slug }: { slug: string }) {
   const board = useBoard();
@@ -29,17 +30,14 @@ export default function BoardProfile({ slug }: { slug: string }) {
             <small>{m.role}</small>
             <h1>{m.name} <SampleTag show={m.sample} /></h1>
             {m.company && <p className="company">{m.company}</p>}
-            {m.linkedin && <a className="btn line sm" href={m.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a>}
+            <SocialLinks m={m} />
           </div>
           <div>
             <p className="kicker">About {first}</p>
             {m.bio.trim()
               ? <Prose text={m.bio} />
               : <p className="lead-muted">{m.name} serves as {/^[aeiou]/i.test(m.role) ? "an" : "a"} {m.role} of the Lake County Tech Campus Foundation, helping expand opportunities for students across Lake and McHenry Counties.</p>}
-            <div className="hero-actions">
-              <Link className="btn blue" href="/contact?topic=General%20question">Contact the Foundation</Link>
-              <Link className="btn line" href="/board">All board members</Link>
-            </div>
+            <p style={{ marginTop: 32 }}><Link className="text-link" href="/board">← All board members</Link></p>
           </div>
         </div>
 

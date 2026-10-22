@@ -1,6 +1,7 @@
 "use client";
 
 import Manager, { type Row } from "@/components/admin/Manager";
+import { socials } from "@/components/SocialLinks";
 import { boardSlug, getAll, update, useData } from "@/lib/store";
 
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
@@ -51,7 +52,7 @@ export default function BoardAdmin() {
           <a className="link-btn" href={`/board/${boardSlug({ name: r.name, slug: r.slug })}`} target="_blank">View ↗</a>
         </>
       )}
-      blank={() => ({ name: "", slug: "", role: "Board Member", company: "", bio: "", photo: "", linkedin: "", order: last + 1 })}
+      blank={() => ({ name: "", slug: "", role: "Board Member", company: "", bio: "", photo: "", website: "", linkedin: "", facebook: "", instagram: "", x: "", order: last + 1 })}
       fields={[
         { key: "name", label: "Name", required: true, half: true },
         { key: "role", label: "Position on the board", required: true, half: true, help: "e.g. Board Chair, Vice Chair, Treasurer, Secretary, Board Member" },
@@ -59,10 +60,10 @@ export default function BoardAdmin() {
         { key: "order", label: "Order", type: "number", half: true, help: "1 shows first. Others move down to make room." },
         { key: "slug", label: "Profile URL", type: "slug", from: "name" },
         { key: "bio", label: "Bio", type: "long", help: "Shown on their profile page; the first paragraph also shows on the Board page. Blank lines start a new paragraph." },
-        { key: "linkedin", label: "LinkedIn URL", help: "Optional. Starts with https://" },
+        ...socials.map(s => ({ key: s.key, label: s.key === "website" ? "Personal or company website" : `${s.label} URL`, half: true, help: "Optional. Starts with https://. Shows as an icon on their profile." })),
         { key: "photo", label: "Photo", type: "image" },
       ]}
-      validate={r => (r.linkedin && !/^https?:\/\//.test(r.linkedin) ? "The LinkedIn URL should start with https://" : null)}
+      validate={r => { const bad = socials.find(s => r[s.key]?.trim() && !/^https?:\/\//.test(r[s.key].trim())); return bad ? `The ${bad.label} link should start with https://` : null; }}
       beforeSave={placeAt}
     />
   );

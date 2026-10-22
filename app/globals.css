@@ -640,6 +640,10 @@ a.person > p:not(.company) { display: -webkit-box; -webkit-line-clamp: 3; -webki
 .profile-card .avatar { width: 200px; height: 200px; font-size: 3.4rem; }
 .profile-card h1 { font-size: 1.5rem; line-height: 1.2; margin-top: 4px; }
 .profile-card .btn { margin-top: 14px; }
+.socials { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 16px; }
+.socials a { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-wash); color: var(--blue); transition: background .2s, color .2s, transform .2s var(--ease); }
+.socials a:hover { background: var(--blue); color: #fff; transform: translateY(-2px); }
+.socials svg { width: 19px; height: 19px; }
 .lead-muted { color: var(--muted); font-size: 1.05rem; max-width: 60ch; }
 .profile-nav { display: flex; justify-content: space-between; gap: 16px; margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--line); }
 .profile-nav a { text-decoration: none; display: grid; gap: 2px; }
