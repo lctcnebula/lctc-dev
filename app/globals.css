@@ -423,6 +423,7 @@ footer.site { background: var(--blue-night); color: rgba(255,255,255,.72); paddi
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips a { border: 1.5px solid var(--line); border-radius: 99px; padding: 5px 12px; font-weight: 600; font-size: .84rem; text-decoration: none; color: var(--ink); transition: all .2s; }
 .chips a:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-wash); }
+.chips a.other { border-style: dashed; color: var(--blue); }
 .hint.center { text-align: center; margin-top: 28px; font-size: .9rem; }
 .hint a { color: var(--blue); }
 .price-table { width: 100%; border-collapse: collapse; margin-bottom: 48px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: .95rem; }

@@ -56,7 +56,7 @@ export default function DonateCheckout() {
   }, [user]);
 
   // Links elsewhere preselect the gift: /donate?type=scholarships&amount=1000&freq=monthly (or yearly), or
-  // /donate?tier=The%20Toolkit&qty=2 for a giving tier. ?fund=Scholarships (the type's name) still works for older links.
+  // /donate?tier=The%20Toolkit&qty=2 for a giving tier; &other=1 jumps to the "any other amount" box. ?fund=Scholarships (the type's name) still works for older links.
   useEffect(() => {
     const q = new URLSearchParams(location.search);
     const gt = givingTiers.find(x => x.name === q.get("tier"));
@@ -67,6 +67,7 @@ export default function DonateCheckout() {
     if (gt && t) return pickTier(gt.name, t, parseInt(q.get("qty") ?? "1"));
     const n = parseFloat(q.get("amount") ?? "");
     if (n >= 5) pickAmount(n, t ?? donationTypes[0]);
+    if (q.get("other")) setTimeout(() => { const el = document.getElementById("d-custom"); el?.scrollIntoView({ block: "center" }); el?.focus(); }, 300);
   }, []);
 
   // Switching type swaps in that type's presets and tiers, so the old amount (preset or typed) is replaced by its default.

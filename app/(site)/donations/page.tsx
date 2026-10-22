@@ -23,6 +23,7 @@ export default function DonationsPage() {
                 <p>{t.text}</p>
                 <div className="chips" aria-label={`Suggested amounts for ${t.name.toLowerCase()}`}>
                   {t.presets.map(a => <Link key={a} href={`/donate?type=${t.slug}&amount=${a}`}>{money(a)}</Link>)}
+                  <Link className="other" href={`/donate?type=${t.slug}&other=1`}>Any other amount</Link>
                 </div>
                 <Link className="btn blue" href={`/donate?type=${t.slug}`}>Give to {t.name.toLowerCase()}</Link>
               </article>
