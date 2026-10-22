@@ -425,6 +425,15 @@ footer.site { background: var(--blue-night); color: rgba(255,255,255,.72); paddi
 .chips a:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-wash); }
 .hint.center { text-align: center; margin-top: 28px; font-size: .9rem; }
 .hint a { color: var(--blue); }
+.price-table { width: 100%; border-collapse: collapse; margin-bottom: 48px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: .95rem; }
+.price-table thead th { background: var(--blue-night); color: #fff; text-align: left; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; padding: 16px 22px; }
+.price-table tbody tr:nth-child(even) { background: var(--mist); }
+.price-table th[scope="row"], .price-table td { padding: 15px 22px; text-align: left; font-weight: 600; border-top: 1px solid var(--line); vertical-align: middle; }
+.price-table th[scope="row"] small { display: block; font-weight: 500; font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.price-table td:nth-child(2) { white-space: nowrap; color: var(--blue); font-weight: 800; }
+.price-table td:nth-child(2) small { color: var(--muted); font-weight: 500; }
+.price-table td:last-child { text-align: right; white-space: nowrap; }
+@media (max-width: 560px) { .price-table th[scope="row"], .price-table td, .price-table thead th { padding: 12px 12px; } }
 .tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
 .tier { position: relative; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 24px; display: flex; flex-direction: column; gap: 10px; }
 .tier h3 { font-size: 1.1rem; }
@@ -496,6 +505,15 @@ footer.site { background: var(--blue-night); color: rgba(255,255,255,.72); paddi
 .custom { position: relative; }
 .custom > span { position: absolute; left: 14px; top: 23px; transform: translateY(-50%); font: italic 800 1.4rem var(--display); color: var(--muted); }
 .custom input { padding-left: 32px !important; font-weight: 600; }
+.fixed-gift { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px 16px; padding: 18px 20px; margin-bottom: 18px; border: 1.5px solid var(--blue); border-radius: 16px; background: var(--blue-wash); }
+.fixed-gift > div:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fixed-gift > div:first-child span { font-size: .86rem; color: var(--muted); }
+.qty { display: flex; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 4px; }
+.qty button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--blue); color: #fff; font-size: 1.1rem; cursor: pointer; }
+.qty button:disabled { background: var(--line); color: var(--muted); cursor: default; }
+.qty output { min-width: 36px; text-align: center; font-weight: 700; }
+.fixed-total { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 1px solid #cfdbe8; font-size: .9rem; }
+.fixed-total b { font: italic 800 1.7rem/1 var(--display); color: var(--blue); }
 .cardbox { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 14px 2px; margin-bottom: 14px; background: var(--mist); }
 .cardnum { position: relative; }
 .cardnum input { padding-right: 70px; font-variant-numeric: tabular-nums; letter-spacing: .04em; }

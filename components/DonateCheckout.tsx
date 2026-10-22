@@ -11,6 +11,7 @@ import { donationTypes, findDonationType, givingTiers, tiersFor } from "@/lib/co
 // a hosted payment page (Stripe Payment Links, PayPal...) to take real gifts. No upper limit on gift size.
 
 export const funds = donationTypes.map(t => t.name);
+const MAX_QTY = 20;
 const TEST: Record<string, "ok" | "decline"> = { "4242424242424242": "ok", "5555555555554444": "ok", "378282246310005": "ok", "6011111111111117": "ok", "4000000000000002": "decline" };
 const brandNames = { visa: "Visa", mastercard: "Mastercard", amex: "Amex", discover: "Discover" } as const;
 type Brand = keyof typeof brandNames | "";
@@ -37,6 +38,7 @@ export default function DonateCheckout() {
   const [type, setType] = useState(donationTypes[0]);
   const [amount, setAmount] = useState(type.default);
   const [tier, setTier] = useState("");
+  const [qty, setQty] = useState(1);
   const [custom, setCustom] = useState("");
   const [freq, setFreq] = useState<"once" | "monthly">("once");
   const [amountErr, setAmountErr] = useState("");
@@ -53,38 +55,45 @@ export default function DonateCheckout() {
   }, [user]);
 
   // Links elsewhere preselect the gift: /donate?type=scholarships&amount=1000&freq=monthly, or
-  // /donate?tier=The%20Toolkit for a giving tier. ?fund=Scholarships (the type's name) still works for older links.
+  // /donate?tier=The%20Toolkit&qty=2 for a giving tier. ?fund=Scholarships (the type's name) still works for older links.
   useEffect(() => {
     const q = new URLSearchParams(location.search);
     const gt = givingTiers.find(x => x.name === q.get("tier"));
     const t = findDonationType(gt?.type ?? q.get("type") ?? q.get("fund"));
     if (t) pickType(t);
-    if (gt && t) return pickTier(gt.name, t);
+    if (q.get("freq") === "monthly") setFreq("monthly");
+    if (gt && t) return pickTier(gt.name, t, parseInt(q.get("qty") ?? "1"));
     const n = parseFloat(q.get("amount") ?? "");
     if (n >= 5) pickAmount(n, t ?? donationTypes[0]);
-    if (q.get("freq") === "monthly") setFreq("monthly");
   }, []);
 
   // Switching type swaps in that type's presets and tiers, so the old amount (preset or typed) is replaced by its default.
   function pickType(t: typeof type) {
-    setType(t); setTier(""); setAmount(t.default); setCustom(""); setAmountErr("");
+    setType(t); setTier(""); setQty(1); setAmount(t.default); setCustom(""); setAmountErr("");
   }
 
-  // A giving tier fixes the amount; picking "Any amount" goes back to the type's default.
-  function pickTier(name: string, t = type) {
+  // A giving tier locks the price: amount = price × how many. A `min` tier starts at its price and can go higher.
+  // Picking "Any amount" goes back to the type's presets.
+  function pickTier(name: string, t = type, n = 1) {
     const gt = tiersFor(t.slug).find(x => x.name === name);
-    setTier(gt ? gt.name : "");
-    pickAmount(gt ? gt.amount : t.default, t, gt?.name);
+    const q = Math.min(MAX_QTY, Math.max(1, n || 1));
+    setTier(gt ? gt.name : ""); setQty(q); setCustom(""); setAmountErr("");
+    setAmount(gt ? gt.amount * (gt.min ? 1 : q) : t.default);
+  }
+  function changeQty(n: number) {
+    if (!chosenTier) return;
+    const q = Math.min(MAX_QTY, Math.max(1, n));
+    setQty(q); setAmount(chosenTier.amount * q);
   }
 
   // An amount that isn't one of the type's presets goes in the "other amount" box so it stays visible.
-  // Changing the amount by hand drops a tier whose price no longer matches.
-  function pickAmount(n: number, t = type, keepTier = tier) {
+  function pickAmount(n: number, t = type) {
     setAmount(n); setAmountErr("");
     setCustom(t.presets.includes(n) ? "" : String(n));
-    if (keepTier && tiersFor(t.slug).find(x => x.name === keepTier)?.amount !== n) setTier("");
   }
   const tiers = tiersFor(type.slug), chosenTier = tiers.find(x => x.name === tier);
+  const fixed = chosenTier && !chosenTier.min;
+  const tierLabel = chosenTier && (fixed && qty > 1 ? `${chosenTier.name} × ${qty}` : chosenTier.name);
 
   const first = useRef(true);
   useEffect(() => {
@@ -104,7 +113,8 @@ export default function DonateCheckout() {
   const set = (k: keyof Fields, v: string) => setF(p => ({ ...p, [k]: v }));
 
   function next() {
-    if (!(amount >= 5)) { setAmountErr("Please enter at least $5."); document.getElementById("d-custom")?.focus(); return; }
+    const least = chosenTier?.min ? chosenTier.amount : 5;
+    if (!(amount >= least)) { setAmountErr(`Please enter at least ${money(least)}.`); document.getElementById("d-custom")?.focus(); return; }
     setStep(2);
   }
 
@@ -152,13 +162,13 @@ export default function DonateCheckout() {
       }
       const b = brandOf(card) as keyof typeof brandNames;
       const id = "LCTC-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-      insert("donations", { receipt: id, name: f.name.trim(), email: f.email.trim(), amount, freq, fund: type.name, ...(chosenTier && { tier: chosenTier.name }), card: `${brandNames[b]} ending ${card.slice(-4)}`, createdAt: now() });
+      insert("donations", { receipt: id, name: f.name.trim(), email: f.email.trim(), amount, freq, fund: type.name, ...(tierLabel && { tier: tierLabel }), card: `${brandNames[b]} ending ${card.slice(-4)}`, createdAt: now() });
       setReceipt({
         first: f.name.trim().split(/\s+/)[0],
         line: `Your ${per ? "monthly" : "one-time"} gift of ${money(amount)} was accepted. A receipt would go to ${f.email.trim()}.`,
         id,
         amt: money(amount) + (per ? " / month" : ""),
-        fund: chosenTier ? `${type.name} · ${chosenTier.name}` : type.name,
+        fund: tierLabel ? `${type.name} · ${tierLabel}` : type.name,
         card: `${brandNames[b]} ending ${card.slice(-4)}`,
         date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
       });
@@ -214,7 +224,7 @@ export default function DonateCheckout() {
                 <label htmlFor="d-tier">What your gift covers <span className="opt">(optional)</span></label>
                 <select id="d-tier" value={tier} onChange={e => pickTier(e.target.value)}>
                   <option value="">Any amount</option>
-                  {tiers.map(x => <option key={x.name} value={x.name}>{x.name} · {money(x.amount)} · {x.item}</option>)}
+                  {tiers.map(x => <option key={x.name} value={x.name}>{x.item} · {money(x.amount)}{x.min ? "+" : " each"}</option>)}
                 </select>
                 {chosenTier && <p className="hint">{chosenTier.impact}</p>}
               </div>
@@ -223,24 +233,39 @@ export default function DonateCheckout() {
               <button type="button" aria-pressed={!per} onClick={() => setFreq("once")}>One-time</button>
               <button type="button" aria-pressed={per} onClick={() => setFreq("monthly")}>Monthly</button>
             </div>
-            <div className="amounts" role="group" aria-label="Gift amount">
+            {fixed ? (
+              <div className="fixed-gift">
+                <div>
+                  <b>{chosenTier.item}</b>
+                  <span>{money(chosenTier.amount)} each</span>
+                </div>
+                <div className="qty" role="group" aria-label="How many">
+                  <button type="button" aria-label="One fewer" disabled={qty <= 1} onClick={() => changeQty(qty - 1)}>−</button>
+                  <output aria-live="polite">{qty}</output>
+                  <button type="button" aria-label="One more" disabled={qty >= MAX_QTY} onClick={() => changeQty(qty + 1)}>+</button>
+                </div>
+                <p className="fixed-total">Total <b>{money(amount)}</b></p>
+              </div>
+            ) : <>
+            {!chosenTier && <div className="amounts" role="group" aria-label="Gift amount">
               {type.presets.map(a => (
                 <button key={a} className="amt" type="button" aria-pressed={!custom && amount === a} onClick={() => pickAmount(a)}>{money(a)}</button>
               ))}
-            </div>
+            </div>}
             <div className="field custom">
               <label htmlFor="d-custom" className="sr-only">Other amount</label>
               <span aria-hidden="true">$</span>
-              <input id="d-custom" type="text" inputMode="decimal" placeholder="Any other amount" autoComplete="off" value={custom}
+              <input id="d-custom" type="text" inputMode="decimal" placeholder={chosenTier ? `${money(chosenTier.amount)} or more` : "Any other amount"} autoComplete="off" value={custom}
                 onChange={e => {
                   const v = e.target.value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/(\.\d{2}).+/, "$1");
                   setCustom(v); setAmountErr("");
                   const n = parseFloat(v);
-                  if (n > 0) { setAmount(n); if (chosenTier && chosenTier.amount !== n) setTier(""); }
-                  else if (!v) { setAmount(type.default); setTier(""); }
+                  if (n > 0) setAmount(n);
+                  else if (!v) setAmount(chosenTier ? chosenTier.amount : type.default);
                 }} />
               <p className="err">{amountErr}</p>
             </div>
+            </>}
             <button className="btn blue pay" type="button" onClick={next}>Continue with {money(amount)}{per ? " / month" : ""}</button>
           </section>
         )}
@@ -248,7 +273,7 @@ export default function DonateCheckout() {
         {step === 2 && (
           <section>
             <button className="back" type="button" onClick={() => setStep(1)}>← Change amount</button>
-            <div className="summary"><span>{per ? "Monthly gift" : "One-time gift"} · {chosenTier ? chosenTier.name : type.name}</span><b>{money(amount)}{per ? "/mo" : ""}</b></div>
+            <div className="summary"><span>{per ? "Monthly gift" : "One-time gift"} · {tierLabel || type.name}</span><b>{money(amount)}{per ? "/mo" : ""}</b></div>
             <form onSubmit={submit} noValidate autoComplete="off">
               {alert && <p className="form-alert" role="alert">{alert}</p>}
               <div className="row2">
