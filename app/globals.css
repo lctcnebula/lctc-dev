@@ -514,7 +514,9 @@ footer.site { background: var(--blue-night); color: rgba(255,255,255,.72); paddi
 .fixed-gift > div:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .fixed-gift > div:first-child span { font-size: .86rem; color: var(--muted); }
 .qty { display: flex; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 4px; }
-.qty button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--blue); color: #fff; font-size: 1.1rem; cursor: pointer; }
+.qty button { position: relative; flex: none; width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 0; background: var(--blue); color: #fff; font-size: 0; cursor: pointer; }
+.qty button::before, .qty button:last-of-type::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 2px; border-radius: 2px; background: currentColor; transform: translate(-50%, -50%); }
+.qty button:last-of-type::after { transform: translate(-50%, -50%) rotate(90deg); }
 .qty button:disabled { background: var(--line); color: var(--muted); cursor: default; }
 .qty output { min-width: 36px; text-align: center; font-weight: 700; }
 .fixed-total { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 1px solid #cfdbe8; font-size: .9rem; }
