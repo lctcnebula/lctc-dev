@@ -29,18 +29,17 @@ export const grantTypes: GrantType[] = [
   { id: "emergency", name: "Emergency need", icon: "🤝", text: "Transportation, clothing or other urgent costs that could keep you from finishing." },
 ];
 
-// Each type has its own preset amounts on the donate page; picking a type swaps the presets and
-// selects its default. `name` is what gets saved on the donation record (Admin → Donations → Fund).
-// Apart from "General" and "In honor or memory", the types are the Foundation's four pillars.
-export type DonationType = { slug: string; name: string; icon: string; text: string; presets: number[]; default: number };
+// The fund each giving opportunity is recorded under (Admin → Donations → Fund). Apart from "General" and
+// "In honor or memory" (kept for checks and older gifts), the types are the Foundation's four pillars.
+export type DonationType = { slug: string; name: string; icon: string; text: string };
 
 export const donationTypes: DonationType[] = [
-  { slug: "general", name: "General donation", icon: "💙", text: "Goes wherever students need it most across all four pillars.", presets: [25, 50, 100, 250, 500, 1000], default: 50 },
-  { slug: "scholarships", name: "Student Scholarships", icon: "🎓", text: "Seeds post-secondary scholarships so graduates can take their next step into college or training.", presets: [25, 100, 250, 500, 1000, 2500], default: 250 },
-  { slug: "credentials", name: "Credentials & Certifications", icon: "📜", text: "Safety credentials, state board exams, fingerprinting and licensing fees.", presets: [50, 100, 200, 300, 500, 1000], default: 200 },
-  { slug: "experiences", name: "Professional Learning Experiences", icon: "🤝", text: "Work-based learning stipends, industry clothing, career field trips and SkillsUSA competitions.", presets: [100, 300, 500, 1100, 1500, 3000], default: 500 },
-  { slug: "innovation", name: "Programmatic Innovation", icon: "🛠️", text: "Student toolkits, lab equipment, curriculum and new pathways that keep programs current.", presets: [500, 1000, 2500, 5000, 10000, 25000], default: 1000 },
-  { slug: "tribute", name: "In honor or memory", icon: "🕊️", text: "Give in someone's name. Tell us who in the note on your receipt email.", presets: [25, 50, 100, 250, 500, 1000], default: 100 },
+  { slug: "general", name: "General donation", icon: "💙", text: "Goes wherever students need it most across all four pillars." },
+  { slug: "scholarships", name: "Student Scholarships", icon: "🎓", text: "Seeds post-secondary scholarships so graduates can take their next step into college or training." },
+  { slug: "credentials", name: "Credentials & Certifications", icon: "📜", text: "Safety credentials, state board exams, fingerprinting and licensing fees." },
+  { slug: "experiences", name: "Professional Learning Experiences", icon: "🤝", text: "Work-based learning stipends, industry clothing, career field trips and SkillsUSA competitions." },
+  { slug: "innovation", name: "Programmatic Innovation", icon: "🛠️", text: "Student toolkits, lab equipment, curriculum and new pathways that keep programs current." },
+  { slug: "tribute", name: "In honor or memory", icon: "🕊️", text: "Give in someone's name. Tell us who in the note on your receipt email." },
 ];
 
 // Fund names used by older links and saved gifts, mapped to the type that replaced them.
@@ -69,23 +68,22 @@ export const pillars = [
 ];
 
 // Tiers have a fixed price per unit (donors pick how many); a `min` tier is a starting amount donors can go above.
-export type GivingTier = { name: string; amount: number; item: string; impact: string; type: string; min?: boolean };
+// `name` is the campaign's own name for the tier and stays the key in links (/donate?tier=The%20Toolkit).
+export type GivingTier = { name: string; amount: number; item: string; icon: string; impact: string; type: string; min?: boolean };
 
-export const tiersFor = (type: string) => givingTiers.filter(t => t.type === type);
-
-// "Student Level Giving Tiers" from the CTE Month campaign. Each "Give" button opens the donate page
-// with the matching type and amount preselected.
+// The proposed giving opportunities ("Student Level Giving Tiers") from the Foundation's Meet the Mission deck,
+// every one shown as a card on the donate page.
 export const givingTiers: GivingTier[] = [
-  { name: "The Expo Gate", amount: 25, item: "Career Expo registration / scholarship fund", type: "scholarships", impact: "100% of this registration fee goes into a dedicated fund that seeds post-secondary student scholarships." },
-  { name: "The Certification Spark", amount: 50, item: "Student certification", type: "credentials", impact: "Gives a student their baseline safety credential, unlocking a live construction site, automotive bay or manufacturing floor." },
-  { name: "Professional First Impression", amount: 100, item: "Professional clothing", type: "experiences", impact: "A student shows up to on-the-job training looking like a professional, with no out-of-pocket clothing cost." },
-  { name: "The Lifesaver Credential", amount: 200, item: "State board exam voucher", type: "credentials", impact: "Pays for high-stakes state board testing, fingerprinting and licensing fees." },
-  { name: "The Competitor Entry", amount: 300, item: "SkillsUSA competition package", type: "experiences", impact: "Covers state or national competition entry, travel and leadership workshop materials for a student representing Tech Campus." },
-  { name: "The Toolkit", amount: 500, item: "Professional toolkit", type: "innovation", impact: "Tools a student keeps after graduation: cosmetology shears, a culinary knife roll or an automotive wrench set." },
-  { name: "The Workforce Bridge", amount: 500, item: "Workforce Bridge stipend", type: "experiences", impact: "A stipend for a student who completes an off-campus internship." },
-  { name: "The Launch a Student Bundle", amount: 1100, item: "Full student support bundle", type: "general", impact: "Sponsors one student's entire year at Tech Campus: student fees, work-based learning, toolkit and certifications." },
-  { name: "The 'Next Step' Field Trip", amount: 1500, item: "Career exploration field trip", type: "experiences", impact: "Takes 42 students to a career site or post-secondary training option, covering travel and food for students and staff." },
-  { name: "The Innovation Catalyst", amount: 10000, item: "Major innovation investment", type: "innovation", min: true, impact: "Capital equipment, expanded high-demand programs and new pathways. Major gifts move opportunities from ideas to reality." },
+  { name: "The Expo Gate", amount: 25, item: "Career Expo registration / scholarship fund", icon: "🎟️", type: "scholarships", impact: "100% of this registration fee goes into a dedicated fund that seeds post-secondary student scholarships." },
+  { name: "The Certification Spark", amount: 50, item: "Student certification", icon: "🦺", type: "credentials", impact: "Gives a student their baseline safety credential, unlocking a live construction site, automotive bay or manufacturing floor." },
+  { name: "Professional First Impression", amount: 100, item: "Professional clothing", icon: "👔", type: "experiences", impact: "A student shows up to on-the-job training looking like a professional, with no out-of-pocket clothing cost." },
+  { name: "The Lifesaver Credential", amount: 200, item: "State board exam voucher", icon: "📝", type: "credentials", impact: "Pays for high-stakes state board testing, fingerprinting and licensing fees." },
+  { name: "The Competitor Entry", amount: 300, item: "SkillsUSA competition package", icon: "🏆", type: "experiences", impact: "Covers state or national competition entry, travel and leadership workshop materials for a student representing Tech Campus." },
+  { name: "The Toolkit", amount: 500, item: "Professional toolkit", icon: "🧰", type: "innovation", impact: "Tools a student keeps after graduation: cosmetology shears, a culinary knife roll or an automotive wrench set." },
+  { name: "The Workforce Bridge", amount: 500, item: "Workforce Bridge stipend", icon: "💼", type: "experiences", impact: "A stipend for a student who completes an off-campus Give Me Ten + TECH 50 internship." },
+  { name: "The Launch a Student Bundle", amount: 1100, item: "Full student support bundle", icon: "🎒", type: "general", impact: "Sponsors one student's entire year at Tech Campus: student fees, work-based learning, toolkit and certifications." },
+  { name: "The 'Next Step' Field Trip", amount: 1500, item: "Career exploration field trip", icon: "🚌", type: "experiences", impact: "Takes 42 students to a career site or post-secondary training option, covering travel and food for students and staff." },
+  { name: "The Innovation Catalyst", amount: 10000, item: "Major innovation investment", icon: "🚀", type: "innovation", min: true, impact: "Capital equipment, expanded high-demand programs and new pathways. Major gifts move opportunities from ideas to reality." },
 ];
 
 export const majorGift = {

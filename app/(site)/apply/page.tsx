@@ -5,7 +5,7 @@ import OutsideScholarships from "@/components/OutsideScholarships";
 import { EmailLink } from "@/components/Live";
 
 export const metadata: Metadata = {
-  title: "Apply for a grant",
+  title: "Apply for aid",
   description: "Lake County Tech Campus students can apply for Foundation scholarships, tools and equipment grants, certification fee grants and emergency help.",
 };
 
@@ -15,8 +15,8 @@ export default function ApplyPage() {
       <section className="page-hero">
         <img src="/assets/img/graduates.jpg" alt="" width={1024} height={683} />
         <div className="wrap">
-          <p className="crumbs"><Link href="/">Home</Link> / Student aid</p>
-          <h1>Apply for Foundation support</h1>
+          <p className="crumbs"><Link href="/">Home</Link> / Apply for aid</p>
+          <h1>Apply for aid</h1>
           <p>Scholarships, grants for tools and fees, and emergency help for Lake County Tech Campus students. One application covers all of it.</p>
         </div>
       </section>

@@ -49,8 +49,10 @@ export default function Stats() {
           ))}
         </div>
         <p className="stat-note">
-          {r.sample ? <><span className="sample-tag">Sample figures</span> </> : null}
-          {r.year} school year · <Link href="/impact">See every year →</Link>
+          {r.sample && <span className="sample-tag">Sample figures</span>}
+          <span>{r.year}</span>
+          <span aria-hidden="true">·</span>
+          <Link href="/impact">See every year →</Link>
         </p>
       </div>
     </div>

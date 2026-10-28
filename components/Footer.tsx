@@ -13,15 +13,15 @@ export default function Footer() {
           </div>
           <div>
             <h4>Explore</h4>
-            <ul>
+            <ul className="two-col">
               <li><Link href="/about">About</Link></li>
-              <li><Link href="/programs">Programs</Link></li>
-              <li><Link href="/events">Events</Link></li>
-              <li><Link href="/blog">Blog</Link></li>
-              <li><Link href="/get-involved">Get involved</Link></li>
               <li><Link href="/donate">Donate</Link></li>
-              <li><Link href="/donations">Types of donations</Link></li>
-              <li><Link href="/pricing">Giving tiers</Link></li>
+              <li><Link href="/programs">Programs</Link></li>
+              <li><Link href="/donate#partner">Partner with us</Link></li>
+              <li><Link href="/events">Events</Link></li>
+              <li><Link href="/privacy">Privacy policy</Link></li>
+              <li><Link href="/blog">Blog</Link></li>
+              <li><Link href="/site-map">Site map</Link></li>
             </ul>
           </div>
           <div>
@@ -30,7 +30,7 @@ export default function Footer() {
               <li><Link href="/board">Board of directors</Link></li>
               <li><Link href="/impact">Yearly impact</Link></li>
               <li><Link href="/alumni">Alumni</Link></li>
-              <li><Link href="/apply">Apply for a grant</Link></li>
+              <li><Link href="/apply">Apply for aid</Link></li>
               <li><Link href="/contact">Contact</Link></li>
             </ul>
           </div>
@@ -52,7 +52,7 @@ export default function Footer() {
 
         <div className="fine">
           <span>© {new Date().getFullYear()} {site.name}</span>
-          <span><Link href="/sitemap.xml">Sitemap</Link></span>
+          <span><Link href="/privacy">Privacy policy</Link> · <Link href="/site-map">Site map</Link></span>
         </div>
       </div>
     </footer>

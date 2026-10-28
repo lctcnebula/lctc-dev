@@ -7,7 +7,7 @@ export default function ReportsAdmin() {
   return (
     <Manager
       collection="reports" title="Yearly reports" noun="years" newLabel="Add year"
-      intro={<>One entry per school year. The newest year feeds the numbers on the home page; all years show on the <a href="/impact" target="_blank">Impact page</a>.</>}
+      intro={<>One entry per year. The newest year feeds the numbers on the home page; all years show on the <a href="/impact" target="_blank">Impact page</a>.</>}
       search={r => r.year}
       sort={(a, b) => b.year.localeCompare(a.year)}
       columns={[
@@ -20,7 +20,7 @@ export default function ReportsAdmin() {
       ]}
       blank={() => ({ year: "", students: 0, scholarships: 0, granted: 0, raised: 0, donors: 0, highlights: [] })}
       fields={[
-        { key: "year", label: "School year", required: true, half: true, help: "e.g. 2026–27" },
+        { key: "year", label: "Year", required: true, half: true, help: "e.g. 2027" },
         { key: "students", label: "Students supported", type: "number", half: true },
         { key: "scholarships", label: "Scholarships & grants awarded", type: "number", half: true },
         { key: "granted", label: "Dollars awarded", type: "number", half: true },

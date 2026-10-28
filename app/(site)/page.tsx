@@ -123,7 +123,7 @@ export default function Home() {
       <section className="block" style={{ paddingTop: 0 }}>
         <div className="wrap">
           <GiveCta />
-          <p style={{ textAlign: "center", marginTop: 28 }}><Link className="text-link" href="/get-involved">More ways to help →</Link></p>
+          <p style={{ textAlign: "center", marginTop: 28 }}><Link className="text-link" href="/donate#partner">More ways to help →</Link></p>
         </div>
       </section>
     </>

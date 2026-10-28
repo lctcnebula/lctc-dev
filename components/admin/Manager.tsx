@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { insert, remove, slugify, update, useData } from "@/lib/store";
 import type { CollectionKey } from "@/lib/seed";
 import { useSite } from "../Providers";
+import { shrink } from "@/lib/image";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Row = Record<string, any> & { id: string };
@@ -63,21 +64,6 @@ export function csvDownload(name: string, columns: Column[], rows: Row[]) {
 export const fmtDate = (iso: string) => iso ? new Date(iso.length === 10 ? iso + "T12:00:00" : iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 export const fmtDateTime = (iso: string) => iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) : "";
 
-/** Shrinks an uploaded photo so it fits comfortably in browser storage. */
-function shrink(file: File, max = 1200): Promise<string> {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    img.onload = () => {
-      const k = Math.min(1, max / Math.max(img.width, img.height));
-      const c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
-      c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(img.src);
-      res(c.toDataURL("image/jpeg", .8));
-    };
-    img.onerror = () => rej(new Error("That file isn't an image we can read."));
-    img.src = URL.createObjectURL(file);
-  });
-}
 
 export default function Manager(p: Props) {
   const all = useData(p.collection) as unknown as Row[];
