@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { useData } from "@/lib/store";
+import { categories } from "@/lib/seed";
 import { CopyButton } from "./Actions";
 
 export function SampleTag({ show, children = "Sample" }: { show?: boolean; children?: React.ReactNode }) {
@@ -60,36 +61,28 @@ export function EmailLink() {
 }
 
 /** Email / phone / address list. Rows the admin left blank are hidden. */
-export function ContactDetails({ className }: { className: string }) {
+export function ContactDetails({ className, maps }: { className: string; maps?: boolean }) {
   const s = useData("settings");
+  const map = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s.address);
   return (
     <dl className={className}>
       <div><dt>Email</dt><dd><a href={`mailto:${s.email}`}>{s.email}</a><CopyButton text={s.email} /></dd></div>
       {s.phone && <div><dt>Phone</dt><dd><a href={"tel:" + s.phone.replace(/[^\d+]/g, "")}>{s.phone}</a></dd></div>}
-      {s.address && <div><dt>Visit</dt><dd>{s.address}</dd></div>}
+      {s.address && <div><dt>Visit</dt><dd>{s.address}{maps && <><br /><a href={map} target="_blank" rel="noopener">Open in Maps →</a></>}</dd></div>}
     </dl>
-  );
-}
-
-/** Embedded Google map of Lake County Tech Campus (the Foundation's address). */
-export function CampusMap() {
-  return (
-    <div className="map-box">
-      <iframe title="Map of Lake County Tech Campus, 19525 W Washington St, Grayslake, IL" loading="lazy" referrerPolicy="no-referrer-when-downgrade"
-        src="https://maps.google.com/maps?q=Lake%20County%20Tech%20Campus%2C%2019525%20W%20Washington%20St%2C%20Grayslake%2C%20IL%2060030&ll=42.358063,-88.0159871&z=15&output=embed" />
-    </div>
   );
 }
 
 export function ProgramPaths({ limit }: { limit?: number }) {
   const programs = useData("programs").slice(0, limit);
+  const label = (id: string) => categories.find(c => c.id === id)?.label;
   if (!programs.length) return <p className="empty">Programs will appear here once they&apos;re added.</p>;
   return (
     <div className="paths">
       {programs.map(p => (
         <Link key={p.id} className="path" href={`/programs/${p.slug}`}>
           <i aria-hidden="true">{p.icon}</i>
-          <div><b>{p.name} <SampleTag show={p.sample} /></b><span>{p.summary}</span></div>
+          <div><small>{label(p.cat)} <SampleTag show={p.sample} /></small><b>{p.name}</b><span>{p.summary}</span></div>
         </Link>
       ))}
     </div>

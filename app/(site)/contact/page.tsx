@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import ContactForm from "@/components/ContactForm";
-import { CampusMap, ContactDetails } from "@/components/Live";
+import { ContactDetails } from "@/components/Live";
 import { site } from "@/lib/content";
 
 export const metadata: Metadata = { title: "Contact", description: `Contact the ${site.name}.` };
@@ -18,9 +18,8 @@ export default function ContactPage() {
           <ContactForm />
           <div className="aside">
             <div className="aside-box">
-              <ContactDetails className="contact-list" />
+              <ContactDetails className="contact-list" maps />
             </div>
-            <CampusMap />
             <div className="aside-box tinted">
               <h3>Students</h3>
               <p className="hint">Looking for financial help? Use the <Link href="/apply">grant application</Link> instead.</p>

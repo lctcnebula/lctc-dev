@@ -1,9 +1,0 @@
-node_modules
-audio
-clips
-raw
-scenes
-frames*
-concat.txt
-durations.json
-*.mp4

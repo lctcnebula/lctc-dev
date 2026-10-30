@@ -28,7 +28,7 @@ export default function AboutPage() {
               {campusFacts.map(f => <div key={f.label}><b>{f.value}</b><span>{f.label}</span></div>)}
             </div>
             <div className="hero-actions">
-              <Link className="btn blue" href="/donate">Donate</Link>
+              <Link className="btn blue" href="/get-involved">Get involved</Link>
               <Link className="btn line" href="/board">Meet the board</Link>
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function AboutPage() {
               <p className="kicker">Four pillars</p>
               <h2>Where the Foundation focuses</h2>
             </div>
-            <Link className="text-link" href="/donate">Ways to give →</Link>
+            <Link className="text-link" href="/donations">Ways to give →</Link>
           </div>
           <div className="pillars">
             {pillars.map(p => (

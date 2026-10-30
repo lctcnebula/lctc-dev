@@ -9,7 +9,6 @@ import { eventParts, timeRange } from "./EventCard";
 import { Missing } from "./Missing";
 import { SampleTag } from "./Live";
 import { Prose } from "./Prose";
-import DemoFill from "./DemoFill";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -108,7 +107,6 @@ function RsvpForm({ e, left, cal }: { e: FoundationEvent; left: number; cal: { g
       <p className="pill-ok">You&apos;re on the list</p>
       <p>See you there, {f.name.trim().split(/\s+/)[0]}. Add it to your calendar:</p>
       {calButtons}
-      <button className="link-btn" type="button" onClick={() => { setF({ name: "", email: "", guests: "0", note: "" }); setDone(false); }}>RSVP for someone else</button>
     </div>
   );
   if (left === 0) return <p className="form-alert">This event is full. Contact us to join the waitlist.</p>;
@@ -130,7 +128,6 @@ function RsvpForm({ e, left, cal }: { e: FoundationEvent; left: number; cal: { g
   return (
     <form className="rsvp" onSubmit={send} noValidate>
       <h3>RSVP</h3>
-      <DemoFill onFill={() => { setF({ name: "Jordan Rivera", email: "jordan.rivera@example.com", guests: "1", note: "Looking forward to it!" }); setErr(""); }} />
       {err && <p className="form-alert" role="alert">{err}</p>}
       <div className="field"><label htmlFor="r-name">Name</label><input id="r-name" value={f.name} onChange={set("name")} autoComplete="name" /></div>
       <div className="field"><label htmlFor="r-email">Email</label><input id="r-email" type="email" value={f.email} onChange={set("email")} autoComplete="email" /></div>

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { palette, useSite } from "./Providers";
 import { ConfettiButton } from "./Actions";
-import DemoFill from "./DemoFill";
 import { insert, money, now } from "@/lib/store";
 import { useUser } from "@/lib/auth";
-import { donationTypes, findDonationType, givingTiers, type GivingTier } from "@/lib/content";
+import { donationTypes, findDonationType, givingTiers, tiersFor } from "@/lib/content";
 import { frequencies, type Freq } from "@/lib/seed";
 
 // Demo checkout: nothing is charged, but every completed gift is recorded in Admin → Donations. Swap the submit handler for
@@ -31,38 +30,19 @@ const formatExp = (raw: string) => {
 
 const blank = { name: "", email: "", card: "", exp: "", cvc: "", zip: "" };
 type Fields = typeof blank;
-type Receipt = { first: string; line: string; id: string; amt: string; fund: string; card: string; date: string; dedication: string };
+type Receipt = { first: string; line: string; id: string; amt: string; fund: string; card: string; date: string };
 
-// Who the gift is for. Anything but "Just from me" reads back as one sentence saved on the donation record:
-// "I am donating in memory of Rosa Diaz because of her love of cooking."
-const purposes = {
-  general: { icon: "💙", label: "Just from me", text: "A general gift, no dedication.", phrase: "" },
-  honor: { icon: "🎉", label: "In honor of someone", text: "Celebrate a person who matters to you.", phrase: "in honor of" },
-  memory: { icon: "🕊️", label: "In memory of someone", text: "Remember a loved one with a gift in their name.", phrase: "in memory of" },
-  behalf: { icon: "🤝", label: "On behalf of someone", text: "Give for a person, family, class or company.", phrase: "on behalf of" },
-} as const;
-type Purpose = keyof typeof purposes;
-const occasions = ["their birthday", "their graduation", "their wedding", "their retirement", "an anniversary", "the holidays"];
-const blankDed = { who: "", why: "", note: "" };
-const dedicationLine = (p: Purpose, d: typeof blankDed) =>
-  p === "general" || !d.who.trim() ? "" : `I am donating ${purposes[p].phrase} ${d.who.trim()}${d.why.trim() ? " because of " + d.why.trim() : ""}.`;
-
-const fundOf = (t: GivingTier) => findDonationType(t.type) ?? donationTypes[0];
-const priceOf = (t: GivingTier) => money(t.amount) + (t.min ? "+" : "");
-const DEFAULT = givingTiers.find(t => t.amount === 50) ?? givingTiers[0];
-
-export default function DonateCheckout({ children }: { children?: ReactNode }) {
+export default function DonateCheckout() {
   const top = useRef<HTMLDivElement>(null);
   const { getConfetti } = useSite();
   const [step, setStep] = useState(1);
-  const [tier, setTier] = useState<GivingTier>(DEFAULT);
+  const [type, setType] = useState(donationTypes[0]);
+  const [amount, setAmount] = useState(type.default);
+  const [tier, setTier] = useState("");
   const [qty, setQty] = useState(1);
   const [custom, setCustom] = useState("");
   const [freq, setFreq] = useState<Freq>("once");
   const [amountErr, setAmountErr] = useState("");
-  const [purpose, setPurpose] = useState<Purpose>("general");
-  const [ded, setDed] = useState(blankDed);
-  const [dedErr, setDedErr] = useState("");
   const [f, setF] = useState<Fields>(blank);
   const [errs, setErrs] = useState<Partial<Fields>>({});
   const [alert, setAlert] = useState("");
@@ -75,34 +55,56 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
     if (user) setF(p => ({ ...p, name: p.name || user.name, email: p.email || user.email }));
   }, [user]);
 
-  // Links elsewhere preselect the gift: /donate?tier=The%20Toolkit&qty=2&freq=monthly. ?type=credentials (a pillar)
-  // picks that pillar's first opportunity; ?amount= sets the major gift amount.
+  // Links elsewhere preselect the gift: /donate?type=scholarships&amount=1000&freq=monthly (or yearly), or
+  // /donate?tier=The%20Toolkit&qty=2 for a giving tier; &other=1 jumps to the "any other amount" box. ?fund=Scholarships (the type's name) still works for older links.
   useEffect(() => {
     const q = new URLSearchParams(location.search);
-    const t = findDonationType(q.get("type") ?? q.get("fund"));
-    const gt = givingTiers.find(x => x.name === q.get("tier")) ?? (t && givingTiers.find(x => x.type === t.slug));
-    if (gt) pick(gt, parseInt(q.get("qty") ?? "1"));
+    const gt = givingTiers.find(x => x.name === q.get("tier"));
+    const t = findDonationType(gt?.type ?? q.get("type") ?? q.get("fund"));
+    if (t) pickType(t);
     const fq = q.get("freq");
     if (fq === "monthly" || fq === "yearly") setFreq(fq);
+    if (gt && t) return pickTier(gt.name, t, parseInt(q.get("qty") ?? "1"));
     const n = parseFloat(q.get("amount") ?? "");
-    if (gt?.min && n >= gt.amount) setCustom(String(n));
-    if (gt || t) setTimeout(() => top.current?.scrollIntoView({ block: "start" }), 300);
+    if (n >= 5) pickAmount(n, t ?? donationTypes[0]);
+    if (q.get("other")) setTimeout(() => { const el = document.getElementById("d-custom"); el?.scrollIntoView({ block: "center" }); el?.focus(); }, 300);
   }, []);
 
-  function pick(t: GivingTier, n = 1) {
-    setTier(t); setQty(Math.min(MAX_QTY, Math.max(1, n || 1))); setCustom(""); setAmountErr("");
-  }
-  // Choosing a card swaps the gift and brings the checkout into view (it sits below the cards on every screen size).
-  function choose(t: GivingTier) {
-    pick(t); setStep(1);
-    requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
+  // Switching type swaps in that type's presets and tiers, so the old amount (preset or typed) is replaced by its default.
+  function pickType(t: typeof type) {
+    setType(t); setTier(""); setQty(1); setAmount(t.default); setCustom(""); setAmountErr("");
   }
 
-  // A fixed tier is price × how many; the major gift starts at its price and the donor can type more.
-  const amount = tier.min ? Math.max(parseFloat(custom) || 0, 0) || tier.amount : tier.amount * qty;
-  const fund = fundOf(tier);
-  const label = !tier.min && qty > 1 ? `${tier.item} × ${qty}` : tier.item;
-  const dedication = dedicationLine(purpose, ded);
+  // A giving tier locks the price: amount = price × how many. A `min` tier starts at its price and can go higher.
+  // Picking "Any amount" goes back to the type's presets.
+  function pickTier(name: string, t = type, n = 1) {
+    const gt = tiersFor(t.slug).find(x => x.name === name);
+    const q = Math.min(MAX_QTY, Math.max(1, n || 1));
+    setTier(gt ? gt.name : ""); setQty(q); setCustom(""); setAmountErr("");
+    setAmount(gt ? gt.amount * (gt.min ? 1 : q) : t.default);
+  }
+  // One dropdown holds both: a type ("general") gives presets + any amount, a giving tier ("tier:The Toolkit") a fixed price.
+  function choose(v: string) {
+    const gt = givingTiers.find(x => "tier:" + x.name === v);
+    const t = findDonationType(gt ? gt.type : v);
+    if (!t) return;
+    pickType(t);
+    if (gt) pickTier(gt.name, t);
+  }
+  function changeQty(n: number) {
+    if (!chosenTier) return;
+    const q = Math.min(MAX_QTY, Math.max(1, n));
+    setQty(q); setAmount(chosenTier.amount * q);
+  }
+
+  // An amount that isn't one of the type's presets goes in the "other amount" box so it stays visible.
+  function pickAmount(n: number, t = type) {
+    setAmount(n); setAmountErr("");
+    setCustom(t.presets.includes(n) ? "" : String(n));
+  }
+  const tiers = tiersFor(type.slug), chosenTier = tiers.find(x => x.name === tier);
+  const fixed = chosenTier && !chosenTier.min;
+  const tierLabel = chosenTier && (fixed && qty > 1 ? `${chosenTier.name} × ${qty}` : chosenTier.name);
 
   const first = useRef(true);
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
   }, [step]);
 
   function reset() {
-    setStep(1); pick(tier); setFreq("once"); setPurpose("general"); setDed(blankDed);
+    setStep(1); pickType(type); setFreq("once");
     setF(blank); setErrs({}); setAlert(""); setReceipt(null);
   }
 
@@ -122,8 +124,8 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
   const set = (k: keyof Fields, v: string) => setF(p => ({ ...p, [k]: v }));
 
   function next() {
-    if (tier.min && amount < tier.amount) { setAmountErr(`Please enter at least ${money(tier.amount)}.`); document.getElementById("d-custom")?.focus(); return; }
-    if (purpose !== "general" && ded.who.trim().length < 2) { setDedErr("Tell us who this gift is for."); document.getElementById("d-who")?.focus(); return; }
+    const least = chosenTier?.min ? chosenTier.amount : 5;
+    if (!(amount >= least)) { setAmountErr(`Please enter at least ${money(least)}.`); document.getElementById("d-custom")?.focus(); return; }
     setStep(2);
   }
 
@@ -136,6 +138,7 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
       zip: p.zip || "60030",
     }));
   }
+
   function validate() {
     const e: Partial<Fields> = {};
     const card = f.card.replace(/\D/g, ""), exp = f.exp.replace(/\D/g, ""), now = new Date();
@@ -170,20 +173,15 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
       }
       const b = brandOf(card) as keyof typeof brandNames;
       const id = "LCTC-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-      insert("donations", {
-        receipt: id, name: f.name.trim(), email: f.email.trim(), amount, freq, fund: fund.name, tier: label,
-        ...(dedication && { dedication, ...(ded.note.trim() && { note: ded.note.trim() }) }),
-        card: `${brandNames[b]} ending ${card.slice(-4)}`, createdAt: now(),
-      });
+      insert("donations", { receipt: id, name: f.name.trim(), email: f.email.trim(), amount, freq, fund: type.name, ...(tierLabel && { tier: tierLabel }), card: `${brandNames[b]} ending ${card.slice(-4)}`, createdAt: now() });
       setReceipt({
         first: f.name.trim().split(/\s+/)[0],
         line: `Your ${fr.adj} gift of ${money(amount)} was accepted. A receipt would go to ${f.email.trim()}.`,
         id,
         amt: money(amount) + fr.per,
-        fund: `${label} · ${fund.name}`,
+        fund: tierLabel ? `${type.name} · ${tierLabel}` : type.name,
         card: `${brandNames[b]} ending ${card.slice(-4)}`,
         date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-        dedication,
       });
       setF(p => ({ ...p, card: "", exp: "", cvc: "" }));
       setStep(3);
@@ -213,20 +211,6 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
   );
 
   return (
-    <>
-      <div className="gift-options" role="group" aria-label="Giving opportunities">
-        {givingTiers.map(t => (
-          <button key={t.name} type="button" className="gift-option" aria-pressed={tier.name === t.name} onClick={() => choose(t)}>
-            <i aria-hidden="true">{t.icon}</i>
-            <span className="go-price"><b>{priceOf(t)}</b>{!t.min && <small>each</small>}</span>
-            <b className="go-name">{t.item}</b>
-            <span className="go-impact">{t.impact}</span>
-            <small className="go-pillar">{fundOf(t).name}</small>
-          </button>
-        ))}
-      </div>
-
-      <div className="apply-layout give-layout">
     <div className="form-card donate-card" ref={top}>
       <div>
         <p className="demo-note" role="note">
@@ -237,77 +221,58 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
 
         {step === 1 && (
           <section>
+            <h2 className="dm-title" id="dm-title">Make a gift</h2>
+            <p className="dm-sub">Pick a type of donation, then choose an amount or enter your own.</p>
             <div className="field">
-              <label htmlFor="d-type">Fund something specific</label>
-              <select id="d-type" value={tier.name} onChange={e => { const t = givingTiers.find(x => x.name === e.target.value); if (t) pick(t); }}>
-                {givingTiers.map(x => <option key={x.name} value={x.name}>{x.icon} {x.item} · {priceOf(x)}{x.min ? "" : " each"}</option>)}
+              <label htmlFor="d-type">Type of donation</label>
+              <select id="d-type" value={chosenTier ? "tier:" + chosenTier.name : type.slug} onChange={e => choose(e.target.value)}>
+                <optgroup label="Any amount">
+                  {donationTypes.map(t => <option key={t.slug} value={t.slug}>{t.icon} {t.name}</option>)}
+                </optgroup>
+                <optgroup label="Fund something specific">
+                  {givingTiers.map(x => <option key={x.name} value={"tier:" + x.name}>{x.item} · {money(x.amount)}{x.min ? "+" : " each"}</option>)}
+                </optgroup>
               </select>
-              <p className="hint">Goes to {fund.name}.</p>
-            </div>
-            <div className="fixed-gift">
-              <div>
-                <b>{tier.item}</b>
-                <span>{tier.min ? `${money(tier.amount)} minimum` : `${money(tier.amount)} each`}</span>
-              </div>
-              {tier.min ? (
-                <div className="field custom">
-                  <label htmlFor="d-custom" className="sr-only">Gift amount</label>
-                  <span aria-hidden="true">$</span>
-                  <input id="d-custom" type="text" inputMode="decimal" placeholder={tier.amount.toLocaleString("en-US")} autoComplete="off" value={custom}
-                    aria-invalid={amountErr ? true : undefined} aria-describedby="e-custom"
-                    onChange={e => { setCustom(e.target.value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/(\.\d{2}).+/, "$1")); setAmountErr(""); }} />
-                </div>
-              ) : (
-                <div className="qty" role="group" aria-label="How many">
-                  <button type="button" aria-label="One fewer" disabled={qty <= 1} onClick={() => setQty(qty - 1)}>−</button>
-                  <output aria-live="polite">{qty}</output>
-                  <button type="button" aria-label="One more" disabled={qty >= MAX_QTY} onClick={() => setQty(qty + 1)}>+</button>
-                </div>
-              )}
-              {amountErr && <p className="err" id="e-custom">{amountErr}</p>}
-              <p className="fixed-total">Total <b>{money(amount)}</b></p>
+              <p className="hint">{chosenTier ? chosenTier.impact : type.text}</p>
             </div>
             <div className="seg" role="group" aria-label="Gift frequency">
               {(Object.keys(frequencies) as Freq[]).map(k => (
                 <button key={k} type="button" aria-pressed={freq === k} onClick={() => setFreq(k)}>{frequencies[k].label}</button>
               ))}
             </div>
-
-            <h3 className="dm-h3">Who is this gift for?</h3>
-            <fieldset>
-              <legend className="sr-only">Who is this gift for?</legend>
-              <div className="choice-grid">
-                {(Object.keys(purposes) as Purpose[]).map(k => (
-                  <label className="choice" key={k}>
-                    <input type="radio" name="purpose" checked={purpose === k} onChange={() => { setPurpose(k); setDedErr(""); }} />
-                    <i aria-hidden="true">{purposes[k].icon}</i>
-                    <div><b>{purposes[k].label}</b><span>{purposes[k].text}</span></div>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            {purpose !== "general" && <div className="dedicate">
-              <div className="field">
-                <label htmlFor="d-who">Their name</label>
-                <input id="d-who" type="text" autoComplete="off" placeholder="e.g. Rosa Diaz, the Class of 2026, Acme Builders" value={ded.who} aria-invalid={dedErr ? true : undefined} aria-describedby="e-who"
-                  onChange={e => { setDed(d => ({ ...d, who: e.target.value })); setDedErr(""); }} />
-                <p className="err" id="e-who">{dedErr}</p>
-              </div>
-              <div className="field">
-                <label htmlFor="d-why">Occasion or reason <span className="opt">optional</span></label>
-                <input id="d-why" type="text" autoComplete="off" placeholder="e.g. their birthday, her love of cooking" value={ded.why} onChange={e => setDed(d => ({ ...d, why: e.target.value }))} />
-                <div className="chips occasions" role="group" aria-label="Common occasions">
-                  {occasions.map(o => <button key={o} type="button" className="chip" aria-pressed={ded.why === o} onClick={() => setDed(d => ({ ...d, why: d.why === o ? "" : o }))}>{o.replace(/^(their|an|the) /, "")}</button>)}
+            {fixed ? (
+              <div className="fixed-gift">
+                <div>
+                  <b>{chosenTier.item}</b>
+                  <span>{money(chosenTier.amount)} each</span>
                 </div>
+                <div className="qty" role="group" aria-label="How many">
+                  <button type="button" aria-label="One fewer" disabled={qty <= 1} onClick={() => changeQty(qty - 1)}>−</button>
+                  <output aria-live="polite">{qty}</output>
+                  <button type="button" aria-label="One more" disabled={qty >= MAX_QTY} onClick={() => changeQty(qty + 1)}>+</button>
+                </div>
+                <p className="fixed-total">Total <b>{money(amount)}</b></p>
               </div>
-              <div className="field">
-                <label htmlFor="d-note">A note for them <span className="opt">optional</span></label>
-                <textarea id="d-note" rows={2} maxLength={300} placeholder="Happy birthday, Mom. This one's for the next generation of chefs." value={ded.note} onChange={e => setDed(d => ({ ...d, note: e.target.value }))} />
-              </div>
-              <blockquote className="dedication" aria-live="polite">
-                {dedication || <>I am donating {purposes[purpose].phrase} <u>their name</u> because of <u>the occasion</u>.</>}
-              </blockquote>
+            ) : <>
+            {!chosenTier && <div className="amounts" role="group" aria-label="Gift amount">
+              {type.presets.map(a => (
+                <button key={a} className="amt" type="button" aria-pressed={!custom && amount === a} onClick={() => pickAmount(a)}>{money(a)}</button>
+              ))}
             </div>}
+            <div className="field custom">
+              <label htmlFor="d-custom" className="sr-only">Other amount</label>
+              <span aria-hidden="true">$</span>
+              <input id="d-custom" type="text" inputMode="decimal" placeholder={chosenTier ? `${money(chosenTier.amount)} or more` : "Any other amount"} autoComplete="off" value={custom}
+                onChange={e => {
+                  const v = e.target.value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/(\.\d{2}).+/, "$1");
+                  setCustom(v); setAmountErr("");
+                  const n = parseFloat(v);
+                  if (n > 0) setAmount(n);
+                  else if (!v) setAmount(chosenTier ? chosenTier.amount : type.default);
+                }} />
+              <p className="err">{amountErr}</p>
+            </div>
+            </>}
             <button className="btn blue pay" type="button" onClick={next}>Continue with {money(amount)}{fr.per}</button>
           </section>
         )}
@@ -315,8 +280,7 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
         {step === 2 && (
           <section>
             <button className="back" type="button" onClick={() => setStep(1)}>← Change amount</button>
-            <div className="summary"><span>{fr.label} gift · {label}{dedication && <small>{dedication}</small>}</span><b>{money(amount)}{fr.short}</b></div>
-            <DemoFill label="Autofill test donor and card" onFill={() => { setF(p => ({ ...p, name: p.name || "Jordan Rivera", email: p.email || "jordan.rivera@example.com" })); fill("4242424242424242"); setErrs({}); }} />
+            <div className="summary"><span>{fr.label} gift · {tierLabel || type.name}</span><b>{money(amount)}{fr.short}</b></div>
             <form onSubmit={submit} noValidate autoComplete="off">
               {alert && <p className="form-alert" role="alert">{alert}</p>}
               <div className="row2">
@@ -356,7 +320,6 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
               <div><dt>Payment</dt><dd>{receipt.card}</dd></div>
               <div><dt>Date</dt><dd>{receipt.date}</dd></div>
             </dl>
-            {receipt.dedication && <blockquote className="dedication">{receipt.dedication}</blockquote>}
             <p className="dm-sub" style={{ fontSize: ".78rem" }}>This is a demo receipt. No money was charged and no email was sent.</p>
             <div className="done-actions">
               <button className="btn blue" type="button" onClick={reset}>Give again</button>
@@ -366,9 +329,6 @@ export default function DonateCheckout({ children }: { children?: ReactNode }) {
         )}
       </div>
     </div>
-        {children}
-      </div>
-    </>
   );
 }
 

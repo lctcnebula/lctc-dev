@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { grantTypes } from "@/lib/content";
 import { insert, useData } from "@/lib/store";
 import {
-  ESSAY_MIN_WORDS, emptyApplication, grades, plansOptions, programYears, stepFields, validate, wordCount,
+  ESSAY_MIN_WORDS, emptyApplication, grades, plansOptions, programYears, stepFields, toText, validate, wordCount,
   type Application, type ApplicationInput, type Errors,
 } from "@/lib/application";
-import DemoFill from "./DemoFill";
+import { useSite } from "./Providers";
 
 const DRAFT_KEY = "lctc-grant-draft";
 const STEPS = ["About you", "Your request", "Your story", "Review"];
@@ -19,6 +19,7 @@ export default function ApplyForm() {
     const [done, setDone] = useState<Application | null>(null);
   const loaded = useRef(false);
   const top = useRef<HTMLDivElement>(null);
+  const { getConfetti } = useSite();
   const programs = useData("programs");
   const schools = useData("settings").schools;
   const lists = { schools, programs };
@@ -54,19 +55,7 @@ export default function ApplyForm() {
     goTo(step + 1);
   }
 
-  function autofill() {
-    setA({
-      firstName: "Maya", lastName: "Patel", email: "maya.patel@example.com", phone: "(847) 555-0142",
-      grade: grades[1], school: schools[0] ?? "Other", program: programs[0]?.slug ?? "", programYear: programYears[1],
-      grantType: grantTypes[0].id, amount: "1500", purpose: "Tuition and books for my first year at the College of Lake County.", plans: plansOptions[0], freeLunch: "No",
-      essay: "I joined Tech Campus because I wanted to work with my hands and build something real. In my program I learned shop safety, earned my first industry certification and found out how much I enjoy solving problems as part of a team. My instructors pushed me to take on harder projects every semester. After graduation I plan to continue my training at a two-year college while working part time in the field. This scholarship would cover tuition and books so I can focus on my classes and keep building the skills employers in Lake County are looking for.",
-      instructorName: "Chris Lee", instructorEmail: "chris.lee@example.com", guardianName: "Priya Patel", guardianEmail: "priya.patel@example.com",
-      certify: true, consent: true,
-    });
-    setErrors({});
-  }
-
-  function submit() {
+  async function submit() {
     const e = validate(a, lists);
     setErrors(e);
     const bad = stepFields.findIndex(fs => fs.some(k => e[k]));
@@ -77,11 +66,14 @@ export default function ApplyForm() {
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     setDone(app);
     top.current?.scrollIntoView({ block: "start" });
+    const fx = await getConfetti();
+    fx?.({ particleCount: 140, spread: 90, origin: { y: .4 }, colors: ["#015998", "#ff8a3d", "#5fa8e0", "#ffffff"] });
   }
 
-  async function download(app: Application) {
-    const { downloadApplicationPdf } = await import("@/lib/applicationPdf");
-    await downloadApplicationPdf(app, programs);
+  function download(app: Application) {
+    const url = URL.createObjectURL(new Blob([toText(app, programs)], { type: "text/plain" }));
+    Object.assign(document.createElement("a"), { href: url, download: `${app.id}.txt` }).click();
+    URL.revokeObjectURL(url);
   }
 
   function startOver() {
@@ -124,7 +116,7 @@ export default function ApplyForm() {
         <p className="conf-id">{done.id}</p>
         <p className="form-sub">Keep this number for your records. The Foundation reviews every application and will email you with a decision. You can download or print a copy below.</p>
         <div className="done-actions">
-          <button className="btn blue" type="button" onClick={() => download(done)}>Download PDF</button>
+          <button className="btn blue" type="button" onClick={() => download(done)}>Download a copy</button>
           <button className="btn line" type="button" onClick={() => window.print()}>Print</button>
         </div>
         <p style={{ marginTop: 18 }}><button className="back" type="button" onClick={startOver}>Start another application</button></p>
@@ -134,7 +126,6 @@ export default function ApplyForm() {
 
   return (
     <div className="form-card" ref={top} style={{ scrollMarginTop: 110 }}>
-      <DemoFill onFill={autofill} />
       <ol className="stepper">
         {STEPS.map((s, k) => <li key={s} className={k === step ? "on" : k < step ? "done" : ""} aria-current={k === step ? "step" : undefined}>{s}</li>)}
       </ol>

@@ -86,11 +86,10 @@ export function validate(a: ApplicationInput, lists: Lists, fields?: (keyof Appl
 }
 
 // Plain-text version of a finished application, used for the downloadable copy.
-// The answers as label/value rows, used for the downloadable PDF copy.
-export function applicationRows(a: Application, programs: Lists["programs"] = []): [string, string][] {
+export function toText(a: Application, programs: Lists["programs"] = []) {
   const program = programs.find(p => p.slug === a.program)?.name ?? a.program;
   const grant = grantTypes.find(g => g.id === a.grantType)?.name ?? a.grantType;
-  const rows: [string, string][] = [
+  const lines: [string, string][] = [
     ["Confirmation", a.id],
     ["Submitted", new Date(a.submittedAt).toLocaleString("en-US")],
     ["Name", `${a.firstName} ${a.lastName}`],
@@ -106,6 +105,6 @@ export function applicationRows(a: Application, programs: Lists["programs"] = []
     ["Free/reduced lunch", a.freeLunch || "-"],
     ["Instructor", `${a.instructorName} <${a.instructorEmail}>`],
   ];
-  if (a.guardianName) rows.push(["Parent/guardian", `${a.guardianName} <${a.guardianEmail}>`]);
-  return rows;
+  if (a.guardianName) lines.push(["Parent/guardian", `${a.guardianName} <${a.guardianEmail}>`]);
+  return "LCTC FOUNDATION GRANT APPLICATION\n\n" + lines.map(([k, v]) => `${k}: ${v}`).join("\n") + "\n\nESSAY\n" + a.essay.trim() + "\n";
 }
