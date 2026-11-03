@@ -11,7 +11,7 @@ export default function AlumniAdmin() {
       search={r => `${r.name} ${r.email} ${r.program} ${r.year} ${r.now}`}
       sort={(a, b) => Number(a.published) - Number(b.published) || b.createdAt.localeCompare(a.createdAt)}
       filters={[{ label: "All", test: () => true }, { label: "Pending", test: r => !r.published }, { label: "Published", test: r => r.published }]}
-      rowActions={r => !r.published ? <button type="button" className="link-btn" onClick={() => update("alumni", r.id, { published: true })}>Approve</button> : null}
+      rowActions={r => !r.published ? <button type="button" className="link-btn" onClick={() => void update("alumni", r.id, { published: true }).catch(x => alert((x as Error).message))}>Approve</button> : null}
       columns={[
         { label: "Name", get: r => <><b>{r.name}</b><small>{r.email}</small></>, csv: r => r.name },
         { label: "Email", get: () => null, csv: r => r.email, className: "hide" },

@@ -8,24 +8,24 @@ const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.orde
 
 // Writes 1, 2, 3... in the given sequence so positions never have gaps or ties.
 function renumber(list: { id: string; order: number }[]) {
-  list.forEach((m, i) => { if (m.order !== i + 1) update("board", m.id, { order: i + 1 }); });
+  return Promise.all(list.map((m, i) => m.order !== i + 1 ? update("board", m.id, { order: i + 1 }) : null));
 }
 
-function move(id: string, by: -1 | 1) {
+async function move(id: string, by: -1 | 1) {
   const list = [...getAll("board")].sort(byOrder);
   const i = list.findIndex(m => m.id === id), j = i + by;
   if (i < 0 || j < 0 || j >= list.length) return;
   [list[i], list[j]] = [list[j], list[i]];
-  renumber(list);
+  await renumber(list).catch(() => {});
 }
 
 // Saving a member at position 3 slides whoever was at 3 and below down one place.
-function placeAt(r: Row) {
+async function placeAt(r: Row) {
   const others = getAll("board").filter(m => m.id !== r.id).sort(byOrder);
   const at = Math.min(Math.max(1, Math.round(+r.order || others.length + 1)), others.length + 1);
   others.forEach((m, i) => {
     const want = i + 1 < at ? i + 1 : i + 2;
-    if (m.order !== want) update("board", m.id, { order: want });
+    if (m.order !== want) void update("board", m.id, { order: want }).catch(() => {});
   });
   return { ...r, order: at };
 }

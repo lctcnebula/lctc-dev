@@ -21,14 +21,16 @@ export default function ContactForm() {
     if (user) setF(p => ({ ...p, name: p.name || user.name, email: p.email || user.email }));
   }, [user]);
 
-  function send(e: React.FormEvent) {
+  async function send(e: React.FormEvent) {
     e.preventDefault();
     if (f.name.trim().length < 2) return setErr("Please enter your name.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) return setErr("Please enter a valid email address.");
     if (f.message.trim().length < 5) return setErr("Please write a short message.");
     setErr("");
-    insert("messages", { name: f.name.trim(), email: f.email.trim(), topic: f.topic, message: f.message.trim(), status: "New", createdAt: now() });
-    setSent(true);
+    try {
+      await insert("messages", { name: f.name.trim(), email: f.email.trim(), topic: f.topic, message: f.message.trim(), status: "New", createdAt: now() });
+      setSent(true);
+    } catch (x) { setErr((x as Error).message); }
   }
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setF(p => ({ ...p, [k]: e.target.value }));

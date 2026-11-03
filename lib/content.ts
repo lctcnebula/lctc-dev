@@ -69,23 +69,23 @@ export const pillars = [
 ];
 
 // Tiers have a fixed price per unit (donors pick how many); a `min` tier is a starting amount donors can go above.
-export type GivingTier = { name: string; amount: number; item: string; impact: string; type: string; min?: boolean };
+export type GivingTier = { name: string; amount: number; item: string; impact: string; type: string; image: string; icon: string; min?: boolean };
 
 export const tiersFor = (type: string) => givingTiers.filter(t => t.type === type);
 
 // "Student Level Giving Tiers" from the CTE Month campaign. Each "Give" button opens the donate page
 // with the matching type and amount preselected.
 export const givingTiers: GivingTier[] = [
-  { name: "The Expo Gate", amount: 25, item: "Career Expo registration / scholarship fund", type: "scholarships", impact: "100% of this registration fee goes into a dedicated fund that seeds post-secondary student scholarships." },
-  { name: "The Certification Spark", amount: 50, item: "Student certification", type: "credentials", impact: "Gives a student their baseline safety credential, unlocking a live construction site, automotive bay or manufacturing floor." },
-  { name: "Professional First Impression", amount: 100, item: "Professional clothing", type: "experiences", impact: "A student shows up to on-the-job training looking like a professional, with no out-of-pocket clothing cost." },
-  { name: "The Lifesaver Credential", amount: 200, item: "State board exam voucher", type: "credentials", impact: "Pays for high-stakes state board testing, fingerprinting and licensing fees." },
-  { name: "The Competitor Entry", amount: 300, item: "SkillsUSA competition package", type: "experiences", impact: "Covers state or national competition entry, travel and leadership workshop materials for a student representing Tech Campus." },
-  { name: "The Toolkit", amount: 500, item: "Professional toolkit", type: "innovation", impact: "Tools a student keeps after graduation: cosmetology shears, a culinary knife roll or an automotive wrench set." },
-  { name: "The Workforce Bridge", amount: 500, item: "Workforce Bridge stipend", type: "experiences", impact: "A stipend for a student who completes an off-campus internship." },
-  { name: "The Launch a Student Bundle", amount: 1100, item: "Full student support bundle", type: "general", impact: "Sponsors one student's entire year at Tech Campus: student fees, work-based learning, toolkit and certifications." },
-  { name: "The 'Next Step' Field Trip", amount: 1500, item: "Career exploration field trip", type: "experiences", impact: "Takes 42 students to a career site or post-secondary training option, covering travel and food for students and staff." },
-  { name: "The Innovation Catalyst", amount: 10000, item: "Major innovation investment", type: "innovation", min: true, impact: "Capital equipment, expanded high-demand programs and new pathways. Major gifts move opportunities from ideas to reality." },
+  { name: "The Expo Gate", amount: 25, item: "Career Expo registration / scholarship fund", type: "scholarships", icon: "🎟️", image: "/assets/img/graduates.jpg", impact: "100% of this registration fee goes into a dedicated fund that seeds post-secondary student scholarships." },
+  { name: "The Certification Spark", amount: 50, item: "Student certification", type: "credentials", icon: "🦺", image: "/assets/img/construction.jpg", impact: "Gives a student their baseline safety credential, unlocking a live construction site, automotive bay or manufacturing floor." },
+  { name: "Professional First Impression", amount: 100, item: "Professional clothing", type: "experiences", icon: "👔", image: "/assets/img/mentoring.jpg", impact: "A student shows up to on-the-job training looking like a professional, with no out-of-pocket clothing cost." },
+  { name: "The Lifesaver Credential", amount: 200, item: "State board exam voucher", type: "credentials", icon: "📝", image: "/assets/img/nursing.jpg", impact: "Pays for high-stakes state board testing, fingerprinting and licensing fees." },
+  { name: "The Competitor Entry", amount: 300, item: "SkillsUSA competition package", type: "experiences", icon: "🏆", image: "/assets/img/welding.jpg", impact: "Covers state or national competition entry, travel and leadership workshop materials for a student representing Tech Campus." },
+  { name: "The Toolkit", amount: 500, item: "Professional toolkit", type: "innovation", icon: "🧰", image: "/assets/img/auto.jpg", impact: "Tools a student keeps after graduation: cosmetology shears, a culinary knife roll or an automotive wrench set." },
+  { name: "The Workforce Bridge", amount: 500, item: "Workforce Bridge stipend", type: "experiences", icon: "💼", image: "/assets/img/catering.jpg", impact: "A stipend for a student who completes an off-campus internship." },
+  { name: "The Launch a Student Bundle", amount: 1100, item: "Full student support bundle", type: "general", icon: "🎒", image: "/assets/img/laptops.jpg", impact: "Sponsors one student's entire year at Tech Campus: student fees, work-based learning, toolkit and certifications." },
+  { name: "The 'Next Step' Field Trip", amount: 1500, item: "Career exploration field trip", type: "experiences", icon: "🚌", image: "/assets/img/culinary.jpg", impact: "Takes 42 students to a career site or post-secondary training option, covering travel and food for students and staff." },
+  { name: "The Innovation Catalyst", amount: 10000, item: "Major innovation investment", type: "innovation", min: true, icon: "🚀", image: "/assets/img/sparks.jpg", impact: "Capital equipment, expanded high-demand programs and new pathways. Major gifts move opportunities from ideas to reality." },
 ];
 
 export const majorGift = {

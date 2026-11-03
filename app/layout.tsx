@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Plus_Jakarta_Sans } from "next/font/google";
 import Providers from "@/components/Providers";
+import DemoAutofill from "@/components/DemoAutofill";
+import { DataProvider } from "@/lib/store";
+import { initialData } from "@/lib/server/initial";
 import "./globals.css";
 
 const display = Barlow_Condensed({ subsets: ["latin"], weight: ["600", "800"], style: ["italic"], variable: "--font-display" });
@@ -17,11 +20,14 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#015998" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { data, viewer } = await initialData();
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
-        <Providers>{children}</Providers>
+        <DataProvider data={data} viewer={viewer}>
+          <Providers>{children}<DemoAutofill /></Providers>
+        </DataProvider>
       </body>
     </html>
   );

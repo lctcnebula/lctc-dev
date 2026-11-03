@@ -19,7 +19,7 @@ export default function ApplyForm() {
     const [done, setDone] = useState<Application | null>(null);
   const loaded = useRef(false);
   const top = useRef<HTMLDivElement>(null);
-  const { getConfetti } = useSite();
+  const { getConfetti, say } = useSite();
   const programs = useData("programs");
   const schools = useData("settings").schools;
   const lists = { schools, programs };
@@ -62,7 +62,8 @@ export default function ApplyForm() {
     if (bad >= 0) { if (bad !== step) goTo(bad); return; }
     const app: Application = { ...a, id: "LCTC-G-" + Math.random().toString(36).slice(2, 8).toUpperCase(), submittedAt: new Date().toISOString() };
     // Goes straight to Admin → Applications.
-    insert("applications", { ...app, status: "New" });
+    try { await insert("applications", { ...app, status: "New" }); }
+    catch (x) { say((x as Error).message); return; }
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     setDone(app);
     top.current?.scrollIntoView({ block: "start" });

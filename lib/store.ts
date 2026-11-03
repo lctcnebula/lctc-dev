@@ -1,105 +1,116 @@
 "use client";
 
-// Front-end only data store. Every collection lives in this browser's localStorage under
-// "lctc:<name>", starting from lib/seed.ts. To move to a real backend later, keep these
-// function signatures and swap the bodies for API calls.
+// The browser's view of the data in Neon Postgres. Pages read collections with useData(); the server renders each
+// page with the public content already filled in (see <DataProvider> in app/layout.tsx), and anything private
+// (donations, applications, messages…) is fetched from /api/data the first time a page asks for it. The server
+// decides what each viewer may see and change; see lib/server/data.ts.
 
-import { useSyncExternalStore } from "react";
+import { createContext, createElement, useContext, useEffect, useSyncExternalStore } from "react";
 import { seed, type CollectionKey, type DB, type FoundationEvent } from "./seed";
+import type { Viewer } from "./roles";
 
-const PREFIX = "lctc:";
+type Item<K extends CollectionKey> = DB[K][number];
+export type Initial = Partial<DB>;
+
 const cache: Partial<DB> = {};
+const loading = new Set<keyof DB>();
 const listeners = new Set<() => void>();
+const EMPTY: never[] = [];
+const emit = () => listeners.forEach(l => l());
 
-function read<K extends keyof DB>(k: K): DB[K] {
-  if (k in cache) return cache[k] as DB[K];
-  let v: DB[K] = seed[k];
-  try {
-    const raw = localStorage.getItem(PREFIX + k);
-    if (raw) v = k === "settings" ? { ...seed.settings, ...JSON.parse(raw) } : withNewSeed(k, JSON.parse(raw));
-  } catch {}
-  cache[k] = v;
-  return v;
+const InitialData = createContext<{ data: Initial; viewer: Viewer | null }>({ data: {}, viewer: null });
+export const useInitialViewer = () => useContext(InitialData).viewer;
+
+/** Hands the server-rendered data to every useData() call below it. */
+export function DataProvider({ data, viewer, children }: { data: Initial; viewer: Viewer | null; children: React.ReactNode }) {
+  return createElement(InitialData.Provider, { value: { data, viewer } }, children);
 }
 
-// Seed items added after this browser first saved a collection would otherwise never show up.
-// "lctc:_seen" remembers which seed ids each collection has already been given, so new ones are
-// added once while ones an admin deleted stay deleted. Untouched placeholder items that the seed
-// no longer has (e.g. the old "Name to be added" board seats) are dropped.
-function withNewSeed<K extends keyof DB>(k: K, stored: DB[K]): DB[K] {
-  const fresh = seed[k] as { id: string }[], ids = new Set(fresh.map(x => x.id));
-  const list = (stored as { id: string; sample?: boolean }[]).filter(x => !x.sample || ids.has(x.id));
-  let seen: Record<string, string[]> = {};
-  try { seen = JSON.parse(localStorage.getItem(PREFIX + "_seen") || "{}"); } catch {}
-  const known = new Set([...(seen[k] || []), ...list.map(x => x.id)]);
-  const added = fresh.filter(x => !known.has(x.id));
-  seen[k] = [...ids];
-  try { localStorage.setItem(PREFIX + "_seen", JSON.stringify(seen)); } catch {}
-  return [...list, ...added] as DB[K];
+async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, cache: "no-store" });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json?.error || "Something went wrong. Please try again.");
+  return json as T;
 }
 
-function write<K extends keyof DB>(k: K, v: DB[K]) {
-  try { localStorage.setItem(PREFIX + k, JSON.stringify(v)); }
-  catch { throw new Error("This browser's storage is full. Remove some images or old entries and try again."); }
-  cache[k] = v;
-  listeners.forEach(l => l());
+const url = (k: keyof DB) => k === "settings" ? "/api/settings" : `/api/data/${k}`;
+
+/** Fetches a collection again from the server. */
+export async function refresh<K extends keyof DB>(k: K) {
+  if (loading.has(k)) return;
+  loading.add(k);
+  try { cache[k] = await api<DB[K]>(url(k)); emit(); }
+  catch { /* keep what we have */ }
+  finally { loading.delete(k); }
+}
+
+/** After signing in or out, what the viewer may see changes, so everything is fetched again. */
+export function refreshAll() {
+  (Object.keys(cache) as (keyof DB)[]).forEach(k => { delete cache[k]; void refresh(k); });
 }
 
 function subscribe(l: () => void) {
   listeners.add(l);
-  const onStorage = (e: StorageEvent) => {
-    if (!e.key?.startsWith(PREFIX)) return;
-    delete cache[e.key.slice(PREFIX.length) as keyof DB];
-    l();
-  };
-  addEventListener("storage", onStorage);
-  return () => { listeners.delete(l); removeEventListener("storage", onStorage); };
+  return () => { listeners.delete(l); };
 }
 
-/** Live view of a collection (or settings). Renders seed data on the server, stored data in the browser. */
+/** Live view of a collection (or settings). */
 export function useData<K extends keyof DB>(k: K): DB[K] {
-  return useSyncExternalStore(subscribe, () => read(k), () => seed[k]);
+  const init = useContext(InitialData).data[k];
+  const fallback = (init ?? (k === "settings" ? seed.settings : EMPTY)) as DB[K];
+  const value = useSyncExternalStore(subscribe, () => (cache[k] ?? fallback) as DB[K], () => fallback);
+  useEffect(() => {
+    if (k in cache) return;
+    if (init) { cache[k] = init; return; }
+    void refresh(k);
+  }, [k, init]);
+  return value;
 }
-
-type Item<K extends CollectionKey> = DB[K][number];
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 export const now = () => new Date().toISOString();
 
-export function getAll<K extends CollectionKey>(k: K): DB[K] { return read(k); }
+export function getAll<K extends CollectionKey>(k: K): DB[K] { return (cache[k] ?? EMPTY) as DB[K]; }
 
-export function insert<K extends CollectionKey>(k: K, item: Omit<Item<K>, "id"> & { id?: string }): Item<K> {
-  const full = { ...item, id: item.id || uid() } as Item<K>;
-  write(k, [full, ...(read(k) as Item<K>[])] as DB[K]);
-  return full;
+function put<K extends CollectionKey>(k: K, list: Item<K>[]) { cache[k] = list as DB[K]; emit(); }
+
+export async function insert<K extends CollectionKey>(k: K, item: Omit<Item<K>, "id"> & { id?: string }): Promise<Item<K>> {
+  const saved = await api<Item<K>>(url(k), { method: "POST", body: JSON.stringify(item) });
+  if (cache[k]) put(k, [saved, ...(cache[k] as Item<K>[]).filter(x => (x as { id: string }).id !== (saved as { id: string }).id)]);
+  return saved;
 }
 
-/** Editing an item clears its "sample" flag, since the content is now the admin's own. */
-export function update<K extends CollectionKey>(k: K, id: string, patch: Partial<Item<K>>) {
-  write(k, (read(k) as Item<K>[]).map(x => (x as { id: string }).id === id ? { ...x, ...patch, sample: false } : x) as DB[K]);
+/** Shows the change straight away; if the server refuses it, the collection is reloaded and the error thrown. */
+export async function update<K extends CollectionKey>(k: K, id: string, patch: Partial<Item<K>> & Record<string, unknown>) {
+  const list = cache[k] as Item<K>[] | undefined;
+  if (list) put(k, list.map(x => (x as { id: string }).id === id ? { ...x, ...patch, sample: false } : x));
+  try {
+    const saved = await api<Item<K>>(`${url(k)}/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) });
+    const now = cache[k] as Item<K>[] | undefined;
+    if (now) put(k, now.map(x => (x as { id: string }).id === id ? saved : x));
+    return saved;
+  } catch (e) { void refresh(k); throw e; }
 }
 
-export function remove<K extends CollectionKey>(k: K, id: string) {
-  write(k, (read(k) as Item<K>[]).filter(x => (x as { id: string }).id !== id) as DB[K]);
+export async function remove<K extends CollectionKey>(k: K, id: string) {
+  const list = cache[k] as Item<K>[] | undefined;
+  if (list) put(k, list.filter(x => (x as { id: string }).id !== id));
+  try { await api(`${url(k)}/${encodeURIComponent(id)}`, { method: "DELETE" }); }
+  catch (e) { void refresh(k); throw e; }
 }
 
-export function saveSettings(patch: Partial<DB["settings"]>) {
-  write("settings", { ...read("settings"), ...patch });
+export async function saveSettings(patch: Partial<DB["settings"]>) {
+  cache.settings = await api<DB["settings"]>("/api/settings", { method: "PUT", body: JSON.stringify(patch) });
+  emit();
 }
 
-/** Wipes every change made in this browser and returns to the seed data. */
-export function resetAll() {
-  (Object.keys(seed) as (keyof DB)[]).forEach(k => { try { localStorage.removeItem(PREFIX + k); } catch {} delete cache[k]; });
-  try { localStorage.removeItem(PREFIX + "_seen"); } catch {}
-  listeners.forEach(l => l());
+/** Super admin only: wipes content and submissions on the server and reloads the starting content. */
+export async function resetAll() {
+  await api("/api/admin/reset", { method: "POST" });
+  refreshAll();
 }
 
-export function slugify(s: string) {
-  return s.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").slice(0, 80);
-}
-
-/** A board member's profile URL part. Members saved before slugs existed fall back to their name. */
-export const boardSlug = (m: { slug?: string; name: string }) => m.slug || slugify(m.name.replace(/^(dr|mr|ms|mrs)\.\s+/i, ""));
+export { boardSlug, slugify } from "./slug";
 
 export function upcoming(events: FoundationEvent[], at = new Date()) {
   const today = new Date(at.getFullYear(), at.getMonth(), at.getDate());
@@ -112,3 +123,4 @@ export function past(events: FoundationEvent[], at = new Date()) {
 }
 
 export { money } from "./content";
+export { api };

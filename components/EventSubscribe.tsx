@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getAll, insert, now } from "@/lib/store";
+import { insert, now } from "@/lib/store";
 
 // Sign-ups land in Admin → Subscribers.
 export default function EventSubscribe() {
@@ -9,13 +9,13 @@ export default function EventSubscribe() {
   const [err, setErr] = useState("");
   const [done, setDone] = useState(false);
 
-  function send(e: React.FormEvent) {
+  async function send(e: React.FormEvent) {
     e.preventDefault();
     const v = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return setErr("Please enter a valid email address.");
     setErr("");
-    if (!getAll("subscribers").some(s => s.email.toLowerCase() === v)) insert("subscribers", { email: v, name: "", createdAt: now() });
-    setDone(true);
+    try { await insert("subscribers", { email: v, name: "", createdAt: now() }); setDone(true); }
+    catch (x) { setErr((x as Error).message); }
   }
 
   if (done) return <p className="subscribe-done" role="status">You&apos;re subscribed. We&apos;ll email {email.trim()} before each event.</p>;

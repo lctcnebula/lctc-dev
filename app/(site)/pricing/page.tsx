@@ -29,11 +29,6 @@ export default function PricingPage() {
           <table className="price-table reveal">
             <thead><tr><th scope="col">Giving opportunity</th><th scope="col">Amount</th><th scope="col"><span className="sr-only">Give</span></th></tr></thead>
             <tbody>
-              <tr>
-                <th scope="row">General donation<small>Goes wherever students need it most</small></th>
-                <td>Any amount</td>
-                <td><Link className="text-link" href="/donate?type=general">Give →</Link></td>
-              </tr>
               {givingTiers.map(t => (
                 <tr key={t.name}>
                   <th scope="row">{t.item}<small>{t.name}</small></th>

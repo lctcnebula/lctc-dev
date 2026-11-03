@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-/** Shown when a slug isn't in this browser's data. Waits a moment so stored items can load first. */
+/** Shown when a slug isn't in the data. Waits a moment so a page's data can finish loading first. */
 export function Missing({ what, back }: { what: string; back: string }) {
   const [show, setShow] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShow(true), 150); return () => clearTimeout(t); }, []);

@@ -94,7 +94,7 @@ export default function Home() {
             </div>
             <Link className="text-link" href="/programs">See all <ProgramCount /> programs →</Link>
           </div>
-          <ProgramPaths limit={6} />
+          <ProgramPaths />
         </div>
       </section>
 

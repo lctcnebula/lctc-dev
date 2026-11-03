@@ -1,7 +1,7 @@
 "use client";
 
 import Manager, { type Row, fmtDate } from "@/components/admin/Manager";
-import { hash, roleLabels, useUser } from "@/lib/auth";
+import { roleLabels, useUser } from "@/lib/auth";
 import { now } from "@/lib/store";
 import type { Role } from "@/lib/seed";
 
@@ -37,16 +37,16 @@ export default function UsersAdmin() {
         const email = String(r.email).trim().toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return "Enter a valid email.";
         if (all.some(x => x.id !== r.id && x.email.toLowerCase() === email)) return "Another account uses that email.";
-        if (!r.pass && !r.newPassword) return "Set a password for the new account.";
+        if (!r.id && !r.newPassword) return "Set a password for the new account.";
         if (r.newPassword && r.newPassword.length < 8) return "Passwords need at least 8 characters.";
         if (r.id === user?.id && r.role !== "superadmin") return "You can't remove your own super admin access.";
         return null;
       }}
+      // The password goes to the server, which stores only a hash of it.
       beforeSave={async r => {
-        const { newPassword, ...rest } = r;
+        const { pass: _, createdAt: _c, ...rest } = r;
         rest.email = String(rest.email).trim().toLowerCase();
-        if (newPassword) rest.pass = await hash(rest.email, newPassword);
-        else if (r.pass && rest.email !== r.email) throw new Error("Changing the email resets the password. Set a new password too.");
+        if (!rest.newPassword) delete rest.newPassword;
         return rest as typeof r;
       }}
     />

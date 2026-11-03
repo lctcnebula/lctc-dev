@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import GiveCta from "@/components/GiveCta";
-import { donationTypes, money, programImpact } from "@/lib/content";
+import { donationTypes, programImpact } from "@/lib/content";
 
 export const metadata: Metadata = { title: "Types of donations", description: "Choose a type of donation: general, scholarships, tools, certifications, student grants or a tribute gift." };
 
@@ -21,10 +21,6 @@ export default function DonationsPage() {
                 <i aria-hidden="true">{t.icon}</i>
                 <h2>{t.name}</h2>
                 <p>{t.text}</p>
-                <div className="chips" aria-label={`Suggested amounts for ${t.name.toLowerCase()}`}>
-                  {t.presets.map(a => <Link key={a} href={`/donate?type=${t.slug}&amount=${a}`}>{money(a)}</Link>)}
-                  <Link className="other" href={`/donate?type=${t.slug}&other=1`}>Any other amount</Link>
-                </div>
                 <Link className="btn blue" href={`/donate?type=${t.slug}`}>Give to {t.name.toLowerCase()}</Link>
               </article>
             ))}

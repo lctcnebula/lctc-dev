@@ -81,7 +81,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <div className="admin-main">
         <div className="admin-top">
           <button className="admin-burger" type="button" aria-expanded={open} aria-label="Menu" onClick={() => setOpen(o => !o)}>☰</button>
-          <span className="demo-flag">Demo: data is saved in this browser only</span>
+          <span className="demo-flag">Demo checkout: no cards are charged</span>
         </div>
         {allowed ? children : (
           <div className="admin-card"><h1>No access</h1><p className="hint">Your role ({roleLabels[user.role]}) can&apos;t open this section. Ask a super admin if you need it.</p></div>

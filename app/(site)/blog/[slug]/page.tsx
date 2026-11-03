@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import BlogPost from "@/components/BlogPost";
-import { seed } from "@/lib/seed";
+import { readCollection } from "@/lib/server/data";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const p = seed.posts.find(x => x.slug === slug);
+  const p = (await readCollection("posts", null)).find(x => x.slug === slug);
   return p ? { title: p.title, description: p.excerpt } : { title: "Blog" };
 }
 

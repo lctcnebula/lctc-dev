@@ -13,11 +13,13 @@ export default function SettingsAdmin() {
   useEffect(() => setF({ email: s.email, phone: s.phone, address: s.address, schools: s.schools.join("\n") }), [s]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF(p => ({ ...p, [k]: e.target.value }));
 
-  function save(e: React.FormEvent) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) return say("Enter a valid email address.");
-    saveSettings({ email: f.email.trim(), phone: f.phone.trim(), address: f.address.trim(), schools: f.schools.split("\n").map(x => x.trim()).filter(Boolean) });
-    say("Settings saved");
+    try {
+      await saveSettings({ email: f.email.trim(), phone: f.phone.trim(), address: f.address.trim(), schools: f.schools.split("\n").map(x => x.trim()).filter(Boolean) });
+      say("Settings saved");
+    } catch (x) { say((x as Error).message); }
   }
 
   return (
@@ -35,8 +37,11 @@ export default function SettingsAdmin() {
       {can(user?.role, "users") && (
         <div className="admin-card danger-zone">
           <h2>Reset demo data</h2>
-          <p className="hint">Clears every change and submission saved in this browser and restores the sample content. You&apos;ll stay signed in only if your account is one of the demo accounts.</p>
-          <button className="btn line sm danger" type="button" onClick={() => { if (confirm("Reset all data in this browser?")) { resetAll(); say("Demo data restored"); } }}>Reset everything</button>
+          <p className="hint">Deletes every change and submission in the database (donations, applications, messages, RSVPs, edits to content) and restores the sample content. Accounts are kept, and the demo logins are restored.</p>
+          <button className="btn line sm danger" type="button" onClick={async () => {
+            if (!confirm("Delete all content and submissions in the database and restore the sample content? This can't be undone.")) return;
+            try { await resetAll(); say("Demo data restored"); } catch (x) { say((x as Error).message); }
+          }}>Reset everything</button>
         </div>
       )}
     </div>

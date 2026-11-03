@@ -3,7 +3,8 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import WaysToHelp from "@/components/WaysToHelp";
 import GiveCta from "@/components/GiveCta";
-import { partnerRoadmap, pillars } from "@/lib/content";
+import GiftCard from "@/components/GiftCard";
+import { givingTiers, partnerRoadmap } from "@/lib/content";
 
 export const metadata: Metadata = { title: "Get involved", description: "Donate, mentor, partner or sponsor to support Lake County Tech Campus students." };
 
@@ -14,25 +15,17 @@ export default function GetInvolvedPage() {
         Give your time, your expertise or your company&apos;s support. Pick the way that fits and we&apos;ll take it from there.
       </PageHero>
 
-      <section className="block">
+      <section className="block" id="gifts">
         <div className="wrap">
           <div className="head reveal">
             <div>
               <p className="kicker">Give</p>
-              <h2>Choose a pillar to support</h2>
-              <p>The Foundation&apos;s work rests on four pillars. Every gift, any size, goes straight to students.</p>
+              <h2>Choose what you fund</h2>
+              <p>Ten giving opportunities, each paying for something specific a student needs. Choose how many, then give: you’ll go straight to checkout with it chosen.</p>
             </div>
-            <Link className="text-link" href="/donations">All types of donations →</Link>
           </div>
-          <div className="pillars">
-            {pillars.map(p => (
-              <Link className="reveal" key={p.name} href={`/donate?type=${p.type}`}>
-                <i aria-hidden="true">{p.icon}</i>
-                <b>{p.name}</b>
-                <span>{p.text}</span>
-                <em>Give to this pillar →</em>
-              </Link>
-            ))}
+          <div className="gift-cards">
+            {givingTiers.map(t => <GiftCard key={t.name} t={t} />)}
           </div>
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getAll, insert, now, upcoming, useData } from "@/lib/store";
+import { insert, now, upcoming, useData } from "@/lib/store";
 import { useUser } from "@/lib/auth";
 import type { FoundationEvent } from "@/lib/seed";
 import { eventParts, timeRange } from "./EventCard";
@@ -111,17 +111,16 @@ function RsvpForm({ e, left, cal }: { e: FoundationEvent; left: number; cal: { g
   );
   if (left === 0) return <p className="form-alert">This event is full. Contact us to join the waitlist.</p>;
 
-  function send(ev: React.FormEvent) {
+  async function send(ev: React.FormEvent) {
     ev.preventDefault();
     const guests = Math.max(0, Math.floor(+f.guests || 0));
     if (f.name.trim().length < 2) return setErr("Please enter your name.");
     if (!emailRe.test(f.email.trim())) return setErr("Please enter a valid email address.");
     if (1 + guests > left) return setErr(`Only ${left} spot${left === 1 ? "" : "s"} left.`);
     const email = f.email.trim().toLowerCase();
-    if (getAll("rsvps").some(r => r.eventId === e.id && r.email.toLowerCase() === email)) return setErr("You've already RSVP'd with this email.");
     setErr("");
-    insert("rsvps", { eventId: e.id, name: f.name.trim(), email, guests, note: f.note.trim(), createdAt: now() });
-    setDone(true);
+    try { await insert("rsvps", { eventId: e.id, name: f.name.trim(), email, guests, note: f.note.trim(), createdAt: now() }); setDone(true); }
+    catch (x) { setErr((x as Error).message); }
   }
 
   const set = (k: keyof typeof f) => (ev: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF(p => ({ ...p, [k]: ev.target.value }));

@@ -3,7 +3,7 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import Stats from "@/components/Stats";
 import { ContactDetails, MemberSchools } from "@/components/Live";
-import { campusFacts, mission, pillars, site } from "@/lib/content";
+import { campusFacts, mission, money, pillars, site, tiersFor } from "@/lib/content";
 
 export const metadata: Metadata = { title: "About", description: `About the ${site.name} and Lake County Tech Campus.` };
 
@@ -60,16 +60,22 @@ export default function AboutPage() {
               <p className="kicker">Four pillars</p>
               <h2>Where the Foundation focuses</h2>
             </div>
-            <Link className="text-link" href="/donations">Ways to give →</Link>
+            <Link className="text-link" href="/get-involved">Ways to give →</Link>
           </div>
           <div className="pillars">
             {pillars.map(p => (
-              <Link className="reveal" key={p.name} href={`/donate?type=${p.type}`}>
+              <article className="pillar reveal" key={p.name}>
                 <i aria-hidden="true">{p.icon}</i>
                 <b>{p.name}</b>
                 <span>{p.text}</span>
-                <em>Give to this pillar →</em>
-              </Link>
+                <ul className="pillar-gifts">
+                  {tiersFor(p.type).map(t => (
+                    <li key={t.name}>
+                      <Link href={`/donate?tier=${encodeURIComponent(t.name)}`}>{t.item}<em>{money(t.amount)}{t.min && "+"}</em></Link>
+                    </li>
+                  ))}
+                </ul>
+              </article>
             ))}
           </div>
         </div>
