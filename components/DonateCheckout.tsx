@@ -31,7 +31,22 @@ const formatExp = (raw: string) => {
 
 const blank = { name: "", email: "", card: "", exp: "", cvc: "", zip: "" };
 type Fields = typeof blank;
-type Receipt = { first: string; line: string; id: string; amt: string; fund: string; card: string; date: string };
+type Receipt = { first: string; line: string; id: string; amt: string; fund: string; card: string; date: string; dedication: string };
+
+const purposes = {
+  general: { icon: "💙", label: "Just from me", text: "A general gift, no dedication.", phrase: "" },
+  honor: { icon: "🎉", label: "In honor of someone", text: "Celebrate a person who matters to you.", phrase: "in honor of" },
+  memory: { icon: "🕊️", label: "In memory of someone", text: "Remember a loved one with a gift in their name.", phrase: "in memory of" },
+  behalf: { icon: "🤝", label: "On behalf of someone", text: "Give for a person, family, class or company.", phrase: "on behalf of" },
+} as const;
+type Purpose = keyof typeof purposes;
+const occasions = ["their birthday", "their graduation", "their wedding", "their retirement", "an anniversary", "the holidays"];
+const blankDedication = { who: "", why: "", note: "" };
+
+// A general gift has no dedication; the others read back as one sentence, saved on the donation record:
+// "I am donating in memory of Rosa Diaz because of her love of cooking."
+const dedicationLine = (p: Purpose, d: typeof blankDedication) =>
+  p === "general" || !d.who.trim() ? "" : `I am donating ${purposes[p].phrase} ${d.who.trim()}${d.why.trim() ? " because of " + d.why.trim() : ""}.`;
 
 export default function DonateCheckout() {
   const top = useRef<HTMLDivElement>(null);
@@ -44,6 +59,9 @@ export default function DonateCheckout() {
   const [custom, setCustom] = useState("");
   const [freq, setFreq] = useState<Freq>("once");
   const [amountErr, setAmountErr] = useState("");
+  const [purpose, setPurpose] = useState<Purpose>("general");
+  const [ded, setDed] = useState(blankDedication);
+  const [dedErr, setDedErr] = useState("");
   const [f, setF] = useState<Fields>(blank);
   const [errs, setErrs] = useState<Partial<Fields>>({});
   const [alert, setAlert] = useState("");
@@ -97,16 +115,19 @@ export default function DonateCheckout() {
 
   function reset() {
     setStep(1); choose(tier); setFreq("once");
+    setPurpose("general"); setDed(blankDedication); setDedErr("");
     setF(blank); setErrs({}); setAlert(""); setReceipt(null);
   }
 
   const fr = frequencies[freq];
+  const dedication = dedicationLine(purpose, ded);
   const brand = brandOf(f.card.replace(/\D/g, ""));
   const set = (k: keyof Fields, v: string) => setF(p => ({ ...p, [k]: v }));
 
   function next() {
     const least = chosenTier?.min ? chosenTier.amount : 5;
     if (!(amount >= least)) { setAmountErr(`Please enter at least ${money(least)}.`); document.getElementById("d-custom")?.focus(); return; }
+    if (purpose !== "general" && ded.who.trim().length < 2) { setDedErr("Tell us who this gift is for."); document.getElementById("d-who")?.focus(); return; }
     setStep(2);
   }
 
@@ -155,7 +176,8 @@ export default function DonateCheckout() {
       const b = brandOf(card) as keyof typeof brandNames;
       const id = "LCTC-" + Math.random().toString(36).slice(2, 8).toUpperCase();
       try {
-        await insert("donations", { receipt: id, name: f.name.trim(), email: f.email.trim(), amount, freq, fund: type.name, ...(tierLabel && { tier: tierLabel }), card: `${brandNames[b]} ending ${card.slice(-4)}`, createdAt: now() });
+        await insert("donations", { receipt: id, name: f.name.trim(), email: f.email.trim(), amount, freq, fund: type.name, ...(tierLabel && { tier: tierLabel }),
+          ...(dedication && { dedication, ...(ded.note.trim() && { note: ded.note.trim() }) }), card: `${brandNames[b]} ending ${card.slice(-4)}`, createdAt: now() });
       } catch (x) { setAlert((x as Error).message); return; }
       setReceipt({
         first: f.name.trim().split(/\s+/)[0],
@@ -165,6 +187,7 @@ export default function DonateCheckout() {
         fund: tierLabel ? `${type.name} · ${tierLabel}` : type.name,
         card: `${brandNames[b]} ending ${card.slice(-4)}`,
         date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        dedication,
       });
       setF(p => ({ ...p, card: "", exp: "", cvc: "" }));
       setStep(3);
@@ -252,6 +275,43 @@ export default function DonateCheckout() {
                 <p className="fixed-total">Total <b>{money(amount)}</b></p>
               </div>
             )}
+
+            <h3 className="dm-h3">Who is this gift for?</h3>
+            <fieldset>
+              <legend className="sr-only">Purpose of your gift</legend>
+              <div className="choice-grid">
+                {(Object.keys(purposes) as Purpose[]).map(k => (
+                  <label className="choice" key={k}>
+                    <input type="radio" name="purpose" checked={purpose === k} onChange={() => { setPurpose(k); setDedErr(""); }} />
+                    <i aria-hidden="true">{purposes[k].icon}</i>
+                    <div><b>{purposes[k].label}</b><span>{purposes[k].text}</span></div>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {purpose !== "general" && <>
+              <div className="field">
+                <label htmlFor="d-who">Their name</label>
+                <input id="d-who" type="text" autoComplete="off" placeholder="e.g. Rosa Diaz, the Class of 2026, Acme Builders" value={ded.who} aria-invalid={dedErr ? true : undefined} aria-describedby="e-who"
+                  onChange={e => { setDed(d => ({ ...d, who: e.target.value })); setDedErr(""); }} />
+                <p className="err" id="e-who">{dedErr}</p>
+              </div>
+              <div className="field">
+                <label htmlFor="d-why">Occasion or reason <span className="opt">optional</span></label>
+                <input id="d-why" type="text" autoComplete="off" placeholder="e.g. their birthday, her love of cooking" value={ded.why} onChange={e => setDed(d => ({ ...d, why: e.target.value }))} />
+                <div className="chips occasions" role="group" aria-label="Common occasions">
+                  {occasions.map(o => <button key={o} type="button" className="chip" aria-pressed={ded.why === o} onClick={() => setDed(d => ({ ...d, why: d.why === o ? "" : o }))}>{o.replace(/^(their|an|the) /, "")}</button>)}
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="d-note">A note for them <span className="opt">optional</span></label>
+                <textarea id="d-note" rows={2} maxLength={300} placeholder="Happy birthday, Mom. This one's for the next generation of chefs." value={ded.note} onChange={e => setDed(d => ({ ...d, note: e.target.value }))} />
+              </div>
+              <blockquote className="dedication" aria-live="polite">
+                {dedication || <>I am donating {purposes[purpose].phrase} <u>their name</u> because of <u>the occasion</u>.</>}
+              </blockquote>
+            </>}
+
             <button className="btn blue pay" type="button" onClick={next}>Continue with {money(amount)}{fr.per}</button>
           </section>
         )}
@@ -299,6 +359,7 @@ export default function DonateCheckout() {
               <div><dt>Payment</dt><dd>{receipt.card}</dd></div>
               <div><dt>Date</dt><dd>{receipt.date}</dd></div>
             </dl>
+            {receipt.dedication && <blockquote className="dedication">{receipt.dedication}</blockquote>}
             <p className="dm-sub" style={{ fontSize: ".78rem" }}>This is a demo receipt. No money was charged and no email was sent.</p>
             <div className="done-actions">
               <button className="btn blue" type="button" onClick={reset}>Give again</button>

@@ -35,6 +35,8 @@ export const frequencies: Record<Freq, { label: string; adj: string; per: string
 export type Donation = {
   id: string; receipt: string; name: string; email: string; amount: number; freq: Freq;
   fund: string; tier?: string; card: string; createdAt: string; sample?: boolean;
+  // Set when the donor gives in someone's name ("I am donating in memory of …").
+  dedication?: string; note?: string;
 };
 
 export type StoredApplication = Application & { status: string; sample?: boolean };
